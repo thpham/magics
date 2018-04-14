@@ -1,0 +1,4 @@
+[submodule "nixops"]
+	path = nixops
+	url = git@github.com:thpham/nixops.git
+	branch = fix/vbox-primary-interface
