@@ -2,9 +2,9 @@ let
 
   k8s-master = { ... }: {
     # because of interface creation order in vbox
-    services.flannel.iface = "enp0s3"; 
+    services.flannel.iface = "enp0s8"; 
     
-    deployment = { 
+    deployment = {
       targetEnv = "virtualbox";
       virtualbox = {
         vcpu = 2;
@@ -17,9 +17,9 @@ let
 
   k8s-worker = { ... }: {
     # because of interface creation order in vbox
-    services.flannel.iface = "enp0s3";
+    services.flannel.iface = "enp0s8";
     
-    deployment = { 
+    deployment = {
       targetEnv = "virtualbox";
       virtualbox = {
         vcpu = 2;

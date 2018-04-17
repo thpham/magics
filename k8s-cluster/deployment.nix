@@ -11,7 +11,7 @@ let
 
 in {
 
-  network.description = "Kubernetes Cluster";
+  network.description = "k8s-cluster";
   network.enableRollback = true;
 
   defaults.imports = [
@@ -24,6 +24,6 @@ in {
   master-3 = k8s-master;
 
   worker-1 = k8s-worker;
-  worker-2 = k8s-worker;
+  worker-2 = k8s-worker; 
 
 }

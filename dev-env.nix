@@ -6,5 +6,7 @@ in
     name = "my-env";
     buildInputs = [ 
       (import ./nixops/release.nix {}).build.x86_64-linux
+      kubernetes
+      kubernetes-helm
     ];
   }

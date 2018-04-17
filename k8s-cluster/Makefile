@@ -5,8 +5,14 @@ VERSION := 709b6f664e472ae2075bbee83bfb1dd1ba95e0e7
 all: deploy
 
 .created:
-	$(NIXOPS) list | grep "Kubernetes Cluster" || \
+	$(NIXOPS) list | grep "k8s-cluster" || \
 	$(NIXOPS) create deployment.nix vbox.nix -d k8s \
+		-I nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/$(VERSION).tar.gz
+	touch .created
+
+.ec2-created:
+	$(NIXOPS) list | grep "k8s-cluster" || \
+	$(NIXOPS) create deployment.nix ec2.nix -d k8s \
 		-I nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/$(VERSION).tar.gz
 	touch .created
 
@@ -22,3 +28,5 @@ build: .created
 deploy: .created
 	$(NIXOPS) deploy -d k8s --kill-obsolete --allow-reboot
 
+deploy-ec2: .ec2-created
+	$(NIXOPS) deploy -d k8s --kill-obsolete --allow-reboot
