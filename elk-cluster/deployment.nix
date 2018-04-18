@@ -1,73 +1,75 @@
+{ environment ? "dev" }:
+
 let
+  elasticSearchInstanceSettings = [
+    { id = 0; name = "es-0"; } 
+    { id = 1; name = "es-1"; }
+    { id = 2; name = "es-2"; }
+  ];
+
+  logstashInstanceSettings = [
+    { id = 0; name = "ls-0"; }
+  ];
   
-  makeElasticsearchMaster = id: {
-      name  = "es-master-${toString id}";
+  makeElasticsearchServer = machine: {
+      name  = machine.name;
       value =
         { config, pkgs, lib, ... }:
         let
-          masters =
-            let 
-              toLine = n: x: "  - ${x.name}\n";
-            in
-              lib.concatImapStrings toLine elasticsearchMasters;
+          #masters =
+          #  let 
+          #    toLine = n: x: "  - ${x.name}\n";
+          #  in
+          #    lib.concatImapStrings toLine elasticsearchMasters;
         in
-          {  
-            deployment = { 
-              targetEnv = "virtualbox";
-              virtualbox.vcpu = 2;
-              virtualbox.memorySize = 4096;
-              virtualbox.headless = true;
-            };
-            
+          {       
             networking.firewall.enable = false;
 
             services.elasticsearch = {
               enable = true;
-              cluster_name = "dev";
-              package = pkgs.elasticsearch5;
+              package = pkgs.elasticsearch6;
+              cluster_name = environment;
               dataDir = "/data";
               listenAddress = "${config.networking.privateIPv4}";
               extraJavaOptions = [
-                "-Djava.net.preferIPv4Stack=true" 
+                "-Djava.net.preferIPv4Stack=true"
+                #"-Dlog4j2.disable.jmx=true"
               ];
               extraConf = ''
                 # Minimum nodes alive to constitute an operational cluster
+                node.name: ${machine.name}
                 discovery.zen.minimum_master_nodes: 2
                 discovery.zen.ping.unicast.hosts:
                   - kibana
-                ${masters}
+                  - es-0
+                  - es-1
+                  - es-2
               '';
             };
           };
   };
 
-  elasticsearchMasters = builtins.genList makeElasticsearchMaster 3;
-
   kibana = { config, pkgs, lib, ... }:
     {
-      deployment = { 
-        targetEnv = "virtualbox";
-        virtualbox.vcpu = 2;
-        virtualbox.memorySize = 4096;
-        virtualbox.headless = true;
-      };
-      
       networking.firewall.enable = false;
 
       services.kibana = {
         enable = true;
-        package = pkgs.kibana5;
+        package = pkgs.kibana6;
         listenAddress = "0.0.0.0";
       };
 
       services.elasticsearch = {
         enable = true;
-        cluster_name = "dev";
-        package = pkgs.elasticsearch5;
+        package = pkgs.elasticsearch6;
+        cluster_name = environment;
+        dataDir = "/data";
         extraJavaOptions = [
-          "-Djava.net.preferIPv4Stack=true" 
+          "-Djava.net.preferIPv4Stack=true"
+          #"-Dlog4j2.disable.jmx=true"
         ];
         extraConf = ''
+          node.name: kibana
           node.master: false
           node.data: false
           node.ingest: false
@@ -79,15 +81,15 @@ let
           discovery.zen.minimum_master_nodes: 2
           discovery.zen.ping.unicast.hosts:
             - kibana
-            - es-master-0
-            - es-master-1
-            - es-master-2
+            - es-0
+            - es-1
+            - es-2
         '';
       };
     };
 
-  makeLogstashServer = id: {
-      name  = "logstash-${toString id}";
+  makeLogstashServer = machine: {
+      name  = machine.name;
       value =
         { config, pkgs, lib, ... }:
         let
@@ -114,7 +116,7 @@ let
 
             output {
               elasticsearch {
-                hosts => [ "http://es-master-0:9200", "http://es-master-1:9200", "http://es-master-2:9200" ] # (required)
+                hosts => [ "http://es-0:9200", "http://es-1:9200", "http://es-2:9200" ] # (required)
               }
               #stdout { codec => rubydebug }
             }
@@ -177,14 +179,7 @@ let
           };
 
         in
-          {  
-            deployment = { 
-              targetEnv = "virtualbox";
-              virtualbox.vcpu = 2;
-              virtualbox.memorySize = 4096;
-              virtualbox.headless = true;
-            };
-            
+          {            
             networking.firewall.enable = false;
 
             systemd.services.logstash = with pkgs; {
@@ -211,10 +206,11 @@ let
           };
   };
 
-  logstashServers = builtins.genList makeLogstashServer 1;
+  elasticsearchServers = map makeElasticsearchServer elasticSearchInstanceSettings;
+  logstashServers     = map makeLogstashServer logstashInstanceSettings;
 
 in  { 
-  network.description = "ELK Cluster";
+  network.description = "elk-cluster";
   network.enableRollback = true;
 
   defaults = {
@@ -223,5 +219,5 @@ in  {
 
   "kibana" = kibana;
 }
-// builtins.listToAttrs elasticsearchMasters
+// builtins.listToAttrs elasticsearchServers
 // builtins.listToAttrs logstashServers

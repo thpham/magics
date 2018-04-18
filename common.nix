@@ -10,6 +10,8 @@ in {
   services.ntp.enable = true;
   time.timeZone = "Europe/Zurich";
 
+  services.nixosManual.enable = false;
+
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
   services.openssh.passwordAuthentication = false;
