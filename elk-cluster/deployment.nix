@@ -149,12 +149,12 @@ let
           '';
 
           logstash6 = pkgs.stdenv.mkDerivation rec {
-            version = "6.1.2";
+            version = "6.2.4";
             name = "logstash-${version}";
 
             src = pkgs.fetchurl {
               url = "https://artifacts.elastic.co/downloads/logstash/${name}.tar.gz";
-              sha256 = "18680qpdvhr16dx66jfia1zrg52005sgdy9yhl7vdhm4gcr7pxwc";
+              sha256 = "07j3jjg5ik4gjgvcx15qqqas9p1m3815jml82a5r1ip9l6vc4h20" ;
             };
 
             dontBuild         = true;
@@ -170,6 +170,8 @@ let
               mkdir -p $out
               cp -r {Gemfile*,modules,vendor,lib,bin,config,data,logstash-core,logstash-core-plugin-api} $out
               cat ${pathPlugins} >> $out/config/logstash.yml
+              patchShebangs $out/bin/logstash
+              patchShebangs $out/bin/logstash-plugin
               wrapProgram $out/bin/logstash \
                 --set JAVA_HOME "${pkgs.jre}"
               wrapProgram $out/bin/logstash-plugin \
