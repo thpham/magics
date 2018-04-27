@@ -32,7 +32,9 @@ let
       Environment = environment;
       Group = "k8s-master";
     }; 
-  } {};
+  } {} // { 
+    services.kubernetes.apiserver.extraOpts = "--cloud-provider=aws";
+  };
 
   k8s-worker = deployment {
     instanceType = "m4.large";
@@ -43,10 +45,12 @@ let
       Group = "k8s-worker";
     }; 
   } {
-    "/data" = {
-      autoFormat = true;
-      fsType = "ext4";
+    data = {
       device = "/dev/xvdf";
+      fsType = "xfs";
+      label = "data";
+      autoFormat = true;
+      mountPoint = "/data";
       ec2.size = 100;
       ec2.volumeType = "gp2";
       ec2.deleteOnTermination = true; # should be false by security

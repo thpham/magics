@@ -1,13 +1,37 @@
 let
 
-  k8s-master = { ... }: {
-    services.kubernetes.roles = [ "master" ];
-    services.zerotierone.enable = true;
+  masterInstanceSettings = [
+    { id = 0; name = "master-0"; } 
+    { id = 1; name = "master-1"; }
+    { id = 2; name = "master-2"; }
+  ];
+
+  workerInstanceSettings = [
+    { id = 0; name = "worker-0"; }
+    { id = 1; name = "worker-1"; }
+  ];
+
+  makeMasterServer = machine: {   
+    name  = machine.name;
+    value =
+      { config, pkgs, lib, ... }:
+      {
+        services.kubernetes.roles = [ "master" ];
+        services.zerotierone.enable = true;
+      };
   };
 
-  k8s-worker = { ... }: {
-    services.kubernetes.roles = [ "node" ];
+  makeWorkerServer = machine: {   
+    name  = machine.name;
+    value =
+      { config, pkgs, lib, ... }:
+      {
+        services.kubernetes.roles = [ "node" ];
+      };
   };
+
+  masterServers = map makeMasterServer masterInstanceSettings;
+  workerServers = map makeWorkerServer workerInstanceSettings;
 
 in {
 
@@ -19,11 +43,6 @@ in {
     ./kubernetes
   ];
 
-  master-1 = k8s-master;
-  master-2 = k8s-master;
-  master-3 = k8s-master;
-
-  worker-1 = k8s-worker;
-  worker-2 = k8s-worker; 
-
 }
+//  builtins.listToAttrs masterServers
+//  builtins.listToAttrs workerServers

@@ -3,24 +3,23 @@
 with pkgs.lib;
 
 let
+  masterNames = 
+    (filter (hostName: any (role: role == "master")
+                           nodes.${hostName}.config.services.kubernetes.roles)
+            (attrNames nodes));
+  
+  masterName = head masterNames;
+  masterHost = nodes.${masterName};
+
+  isMaster = any (role: role == "master") config.services.kubernetes.roles;
 
   domain = "kubernetes.local";
   certs = import ./certs.nix { 
     inherit pkgs;
     externalDomain = domain;
     serviceClusterIp = "10.0.0.1";
-    etcdMasterHosts = [
-      "${nodes.master-1.config.networking.privateIPv4}"
-      "${nodes.master-2.config.networking.privateIPv4}"
-      "${nodes.master-3.config.networking.privateIPv4}"
-    ];
+    etcdMasterHosts = builtins.map (hostName: hostName+".${domain}") masterNames;
   };
-  masterName = head
-    (filter (nodeName: any (role: role == "master")
-                           nodes.${nodeName}.config.services.kubernetes.roles)
-            (attrNames nodes));
-  masterNode = nodes.${masterName};
-  master = any (role: role == "master") config.services.kubernetes.roles;
 
 in
 
@@ -30,13 +29,12 @@ in
     inherit domain;
 
     extraHosts = ''
-      ${masterNode.config.networking.privateIPv4}  etcd.${domain}
-      ${masterNode.config.networking.privateIPv4}  api.${domain}
-      ${concatMapStringsSep "\n" (nodeName:"${nodes.${nodeName}.config.networking.privateIPv4} ${nodeName}.${domain}") (attrNames nodes)}
+      ${masterHost.config.networking.privateIPv4}  api.${domain}
+      ${concatMapStringsSep "\n" (hostName:"${nodes.${hostName}.config.networking.privateIPv4} ${hostName}.${domain}") (attrNames nodes)}
     '';
 
     firewall = {
-      allowedTCPPorts = if master then [
+      allowedTCPPorts = if isMaster then [
         10250      # kubelet
         2379 2380  # etcd
         443        # kubernetes apiserver
@@ -53,7 +51,12 @@ in
     };
   };
   
-  #services.dnsmasq = if master then {
+  services.monit = if isMaster then {
+    enable = true;
+    config =  builtins.readFile ./monitrc;
+  } else {};
+
+  #services.dnsmasq = if isMaster then {
   #  enable = true;
   #  resolveLocalQueries = true;
   #  servers = [ "8.8.8.8" "8.8.4.4" ];
@@ -61,7 +64,7 @@ in
   #  '';
   #} else {};
 
-  services.etcd = if master then {
+  services.etcd = if isMaster then {
     enable = true;
     certFile = "${certs.master}/etcd.pem";
     keyFile = "${certs.master}/etcd-key.pem";
@@ -70,18 +73,12 @@ in
     listenClientUrls = ["https://0.0.0.0:2379"];
     listenPeerUrls = ["https://0.0.0.0:2380"];
     advertiseClientUrls = [
-      # "https://etcd.${config.networking.domain}:2379"
-      "https://${config.networking.privateIPv4}:2379"
+      "https://${config.networking.hostName}.${config.networking.domain}:2379"
     ];
-    initialCluster = [
-      # "${masterName}=https://etcd.${config.networking.domain}:2380"
-      "master-1=https://${nodes.master-1.config.networking.privateIPv4}:2380"
-      "master-2=https://${nodes.master-2.config.networking.privateIPv4}:2380"
-      "master-3=https://${nodes.master-3.config.networking.privateIPv4}:2380" 
-    ];
+    initialClusterState = "new"; # "new" when create, update it to "existing", when recovering
+    initialCluster = builtins.map (hostName: hostName+"=https://"+hostName+".${domain}:2380") masterNames;
     initialAdvertisePeerUrls = [
-      # "https://etcd.${config.networking.domain}:2380"
-      "https://${config.networking.privateIPv4}:2380"
+      "https://${config.networking.hostName}.${config.networking.domain}:2380"
     ];
   } else {};
 
@@ -89,7 +86,7 @@ in
     ETCDCTL_CERT_FILE = "${certs.worker}/etcd-client.pem";
     ETCDCTL_KEY_FILE = "${certs.worker}/etcd-client-key.pem";
     ETCDCTL_CA_FILE = "${certs.worker}/ca.pem";
-    ETCDCTL_PEERS = "https://etcd.${domain}:2379";
+    ETCDCTL_PEERS = builtins.concatStringsSep "," (builtins.map (hostName: "https://"+hostName+".${domain}:2379") masterNames);
   };
 
   services.kubernetes = {
@@ -111,8 +108,12 @@ in
 
     caFile = "${certs.master}/ca.pem";
 
-    apiserver = {
-      advertiseAddress = masterNode.config.networking.privateIPv4;
+    apiserver = if false then {
+      advertiseAddress = config.networking.privateIPv4;
+      extraOpts = "--apiserver-count=3 --endpoint-reconciler-type=lease";
+    } else {
+      # this may be the address of an LB
+      advertiseAddress = masterHost.config.networking.privateIPv4;
       tlsCertFile = "${certs.master}/kube-apiserver.pem";
       tlsKeyFile = "${certs.master}/kube-apiserver-key.pem";
       kubeletClientCertFile = "${certs.master}/kubelet-client.pem";
@@ -126,7 +127,7 @@ in
       serviceClusterIpRange = "10.0.0.0/24"; 
     };
     etcd = {
-      servers = [ "https://etcd.${config.networking.domain}:2379" ];
+      servers = builtins.map (hostName: "https://"+hostName+".${domain}:2379") masterNames;
       certFile = "${certs.worker}/etcd-client.pem";
       keyFile = "${certs.worker}/etcd-client-key.pem";
     };
@@ -142,7 +143,7 @@ in
         keyFile = "${certs.worker}/apiserver-client-kubelet-key.pem";
       };
       ## nixos dnsmasq service on master node
-      #clusterDns = "${masterNode.config.networking.privateIPv4}";
+      #clusterDns = "${masterHost.config.networking.privateIPv4}";
     };
     controllerManager = {
       serviceAccountKeyFile = "${certs.master}/kube-service-accounts-key.pem";
