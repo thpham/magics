@@ -169,6 +169,7 @@ in
         certFile = "${certs.worker}/apiserver-client-kubelet-${config.networking.hostName}.pem";
         keyFile = "${certs.worker}/apiserver-client-kubelet-${config.networking.hostName}-key.pem";
       };
+      extraOpts = "--volume-plugin-dir=/var/lib/kubelet/volumeplugins";
       ## nixos dnsmasq service on master node
       #clusterDns = "${masterHost.config.networking.privateIPv4}";
     };
