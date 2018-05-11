@@ -12,7 +12,7 @@ all: deploy
 
 .ec2-created:
 	$(NIXOPS) list | grep "elk-cluster" || \
-	$(NIXOPS) create deployment.nix ec2.nix -d kafka \
+	$(NIXOPS) create deployment.nix ec2.nix -d elk \
 		-I nixpkgs=https://github.com/NixOS/nixpkgs/archive/$(VERSION).tar.gz
 	touch .created
 
