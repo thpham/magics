@@ -14,7 +14,7 @@ all: deploy
 	$(NIXOPS) list | grep "elk-cluster" || \
 	$(NIXOPS) create deployment.nix ec2.nix -d elk \
 		-I nixpkgs=https://github.com/NixOS/nixpkgs/archive/$(VERSION).tar.gz
-	touch .created
+	touch .ec2-created
 
 test: check
 

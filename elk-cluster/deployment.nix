@@ -1,16 +1,9 @@
 { pkgs ? import <nixpkgs> {},
-  environment ? "dev" }:
+  environment ? "dev",
+  machinesConfig ? builtins.readFile ./machines.json }:
 
 let
-  elasticSearchInstanceSettings = [
-    { id = 0; name = "es-0"; } 
-    { id = 1; name = "es-1"; }
-    { id = 2; name = "es-2"; }
-  ];
-
-  logstashInstanceSettings = [
-    { id = 0; name = "ls-0"; }
-  ];
+  machines = builtins.fromJSON machinesConfig;
 
   esMasters =
     with pkgs.lib;
@@ -48,6 +41,7 @@ let
         };
       };
   };
+  elasticsearchServers = map makeElasticsearchServer machines.elasticsearch.configs;
 
   kibana = { config, pkgs, ... }: {
     networking.firewall.enable = false;
@@ -92,7 +86,7 @@ let
         esMasterUriList = builtins.concatStringsSep "," 
           (builtins.map (hostName: "\"http://"+hostName+":9200\"") 
             (builtins.map (x: x.name) 
-              elasticSearchInstanceSettings) );
+              machines.elasticsearch.configs) );
         
         logstashConfig = pkgs.writeText "logstash.conf" ''
           input {
@@ -204,9 +198,7 @@ let
         };
       };
   };
-
-  elasticsearchServers = map makeElasticsearchServer elasticSearchInstanceSettings;
-  logstashServers     = map makeLogstashServer logstashInstanceSettings;
+  logstashServers = map makeLogstashServer machines.logstash.configs;
 
 in  { 
   network.description = "elk-cluster";
@@ -216,7 +208,7 @@ in  {
     imports = [ ../common.nix ];
   };
 
-  "kibana" = kibana;
+  kibana = kibana;
 }
 // builtins.listToAttrs elasticsearchServers
 // builtins.listToAttrs logstashServers
