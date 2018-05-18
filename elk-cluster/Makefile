@@ -29,4 +29,4 @@ deploy: .created
 	$(NIXOPS) deploy -d elk --kill-obsolete --allow-reboot
 
 deploy-ec2: .ec2-created
-	$(NIXOPS) deploy -d kafka --kill-obsolete --allow-reboot
+	$(NIXOPS) deploy -d elk --kill-obsolete --allow-reboot
