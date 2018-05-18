@@ -1,0 +1,22 @@
+{
+  "elasticsearch": {
+    "aws": {"securityGroupIds": [ "sg-" ], "instanceType": "m4.large", "storageSize": 30 },
+    "configs": [
+      {"id": 0, "name": "es-0", "aws-subnetId": "subnet-"},
+      {"id": 1, "name": "es-1", "aws-subnetId": "subnet-"},
+      {"id": 2, "name": "es-2", "aws-subnetId": "subnet-"}
+    ]
+  },
+  "logstash": {
+    "aws": {"securityGroupIds": [ "sg-" ], "instanceType": "m4.large", "storageSize": 20 },
+    "configs": [
+      {"id": 0, "name": "ls-0", "aws-subnetId": "subnet-"}
+    ]
+  },
+  "kibana": {
+    "aws": {
+      "securityGroupIds": [ "sg-" ], "instanceType": "m4.large",
+      "subnetId": "subnet-", "storageSize": 20
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "masters": {
+    "aws": {"securityGroupIds": [ "sg-" ], "instanceType": "m4.large" },
+    "configs": [
+      {"id": 0, "name": "master-0", "aws-subnetId": "subnet-"},
+      {"id": 1, "name": "master-1", "aws-subnetId": "subnet-"},
+      {"id": 2, "name": "master-2", "aws-subnetId": "subnet-"}
+    ]
+  },
+  "workers": {
+    "aws": {"securityGroupIds": [ "sg-" ], "instanceType": "m4.large", "storageSize": 20 },
+    "configs": [
+      {"id": 0, "name": "worker-0", "aws-subnetId": "subnet-"},
+      {"id": 0, "name": "worker-1", "aws-subnetId": "subnet-"}
+    ]
+  }
+}

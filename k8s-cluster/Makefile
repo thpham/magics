@@ -14,7 +14,7 @@ all: deploy
 	$(NIXOPS) list | grep "k8s-cluster" || \
 	$(NIXOPS) create deployment.nix ec2.nix -d k8s \
 		-I nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/$(VERSION).tar.gz
-	touch .created
+	touch .ec2-created
 
 test: check
 

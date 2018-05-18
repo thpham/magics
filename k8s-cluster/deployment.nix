@@ -1,15 +1,7 @@
+{ machinesConfig ? builtins.readFile ./machines.json }:
+
 let
-
-  masterInstanceSettings = [
-    { id = 0; name = "master-0"; } 
-    { id = 1; name = "master-1"; }
-    { id = 2; name = "master-2"; }
-  ];
-
-  workerInstanceSettings = [
-    { id = 0; name = "worker-0"; }
-    { id = 1; name = "worker-1"; }
-  ];
+  machines = builtins.fromJSON machinesConfig;
 
   makeMasterServer = machine: {   
     name  = machine.name;
@@ -20,6 +12,7 @@ let
         services.zerotierone.enable = true;
       };
   };
+  masterServers = map makeMasterServer machines.masters.configs;
 
   makeWorkerServer = machine: {   
     name  = machine.name;
@@ -28,13 +21,10 @@ let
       {
         services.kubernetes.roles = [ "node" ];
       };
-  };
-
-  masterServers = map makeMasterServer masterInstanceSettings;
-  workerServers = map makeWorkerServer workerInstanceSettings;
+  }; 
+  workerServers = map makeWorkerServer machines.workers.configs;
 
 in {
-
   network.description = "k8s-cluster";
   network.enableRollback = true;
 
