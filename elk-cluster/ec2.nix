@@ -62,7 +62,7 @@ let
           autoFormat = true;
           fsType = "ext4";
           device = "/dev/xvdf";
-          ec2.size = 20;
+          ec2.size = machines.logstash.aws.storageSize;
           ec2.volumeType = "gp2";
           ec2.deleteOnTermination = true; # should be false by security
         };
