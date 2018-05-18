@@ -1,0 +1,18 @@
+{
+  "zookeeper": {
+    "aws": {"securityGroupIds": [ "sg-" ], "instanceType": "m4.large" },
+    "configs": [
+      {"id": 0, "name": "zk-0", "aws-subnetId": "subnet-"},
+      {"id": 1, "name": "zk-1", "aws-subnetId": "subnet-"},
+      {"id": 2, "name": "zk-2", "aws-subnetId": "subnet-"}
+    ]
+  },
+  "kafka": {
+    "aws": {"securityGroupIds": [ "sg-" ], "instanceType": "m4.large", "storageSize": 30 },
+    "configs": [
+      {"id": 0, "name": "kafka-0", "aws-subnetId": "subnet-"},
+      {"id": 1, "name": "kafka-1", "aws-subnetId": "subnet-"},
+      {"id": 2, "name": "kafka-2", "aws-subnetId": "subnet-"}
+    ]
+  }
+}
