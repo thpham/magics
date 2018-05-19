@@ -1,7 +1,7 @@
-{ machinesConfig ? builtins.readFile ./machines.json }:
+{ machinesConfigPath ? ./machines.json }:
 
 let
-  machines = builtins.fromJSON machinesConfig;
+  machines = builtins.fromJSON (builtins.readFile machinesConfigPath);
 
   makeMasterServer = machine: {
     name  = machine.name;
@@ -13,8 +13,8 @@ let
         deployment = {
           targetEnv = "virtualbox";
           virtualbox = {
-            vcpu = 2;
-            memorySize = 4096;
+            vcpu = 1;
+            memorySize = 2048;
             headless = true;
             #vmFlags = [];
           };

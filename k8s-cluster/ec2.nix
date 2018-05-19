@@ -1,13 +1,13 @@
 { aws-profile ? "default",
   environment ? "dev",
   aws-region  ? "us-east-1",
-  machinesConfig ? builtins.readFile ./machines.json }:
+  machinesConfigPath ? ./machines.json }:
 
 let
   region = aws-region;
   accessKeyId = aws-profile;
 
-  machines = builtins.fromJSON machinesConfig;
+  machines = builtins.fromJSON (builtins.readFile machinesConfigPath);
 
   makeEC2configs = ec2Deployment: filesys:
     { resources, ... }:

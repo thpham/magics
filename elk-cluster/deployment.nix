@@ -1,9 +1,9 @@
 { pkgs ? import <nixpkgs> {},
   environment ? "dev",
-  machinesConfig ? builtins.readFile ./machines.json }:
+  machinesConfigPath ? ./machines.json }:
 
 let
-  machines = builtins.fromJSON machinesConfig;
+  machines = builtins.fromJSON (builtins.readFile machinesConfigPath);
 
   esMasters =
     with pkgs.lib;

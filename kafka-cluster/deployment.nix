@@ -1,7 +1,7 @@
-{ machinesConfig ? builtins.readFile ./machines.json }:
+{ machinesConfigPath ? ./machines.json }:
 
 let 
-  machines = builtins.fromJSON machinesConfig;
+  machines = builtins.fromJSON (builtins.readFile machinesConfigPath);
 
   makeKafkaServer = machine: {   
     name  = machine.name;
