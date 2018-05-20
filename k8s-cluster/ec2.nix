@@ -9,60 +9,85 @@ let
 
   machines = builtins.fromJSON (builtins.readFile machinesConfigPath);
 
-  makeEC2configs = ec2Deployment: filesys:
-    { resources, ... }:
-    { 
-      #services.flannel.iface = "eth0"; 
-      deployment.targetEnv = "ec2";
-      deployment.ec2 = {
+  makeMasterServer = machine: {   
+    name  = machine.name;
+    value = { resources, ... }:
+      let
+      in {
+        #services.flannel.iface = "eth0"; 
+        deployment.targetEnv = "ec2";
+        deployment.ec2 = {
           keyPair = resources.ec2KeyPairs.k8s-key-pair;
           accessKeyId = accessKeyId;
           region = region;
           ebsInitialRootDiskSize = 30;
           usePrivateIpAddress = false;  # should be true if managed within vpc
           associatePublicIpAddress = true;  # should be false if hidden within vpc
-        } // ec2Deployment;
-      fileSystems = filesys;
-    };
-
-  makeMasterServer = machine: {   
-    name  = machine.name;
-    value = makeEC2configs {
-        instanceType = machines.masters.aws.instanceType;
-        securityGroupIds = machines.masters.aws.securityGroupIds;
-        subnetId = machine.aws-subnetId;
-        tags = {
-          Environment = environment;
-          Group = "k8s-master";
-        }; 
-      } {};
-      #// { 
-      #  services.kubernetes.apiserver.extraOpts = "--cloud-provider=aws";
-      #};
+          #spotInstancePrice = 5;
+          #spotInstanceTimeout = 60;
+          instanceType = machines.masters.aws.instanceType;
+          securityGroupIds = machines.masters.aws.securityGroupIds;
+          subnetId = machine.aws-subnetId;
+          instanceProfile = "k8sMaster-Instance-Profile";
+          tags = {
+            Environment = environment;
+            Group = "k8s-master";
+            "kubernetes.io/cluster/${environment}" = "owned"; # ClusterID
+            "k8s.io/role/master" = "1";
+          };
+        };
+        services.kubernetes.apiserver.extraOpts = "--cloud-provider=aws";
+        services.kubernetes.controllerManager.extraOpts = "--cloud-provider=aws";
+        services.kubernetes.kubelet.extraOpts = "--cloud-provider=aws";
+        # fix route conflict with flannel subnet and AWS instance metadata api
+        networking.dhcpcd.runHook = "ip route add 169.254.169.254/32 dev eth0";
+      };
   };
   masterServers = map makeMasterServer machines.masters.configs;
 
   makeWorkerServer = machine: {   
     name  = machine.name;
-    value = makeEC2configs {
-        instanceType = machines.workers.aws.instanceType;
-        securityGroupIds =  machines.workers.aws.securityGroupIds;
-        subnetId = machine.aws-subnetId;
-        tags = {
-          Environment = environment;
-          Group = "k8s-worker";
-        }; 
-      } {
-        data = {
-          device = "/dev/xvdf";
-          fsType = "xfs";
-          label = "data";
-          autoFormat = true;
-          mountPoint = "/data";
-          ec2.size = machines.workers.aws.storageSize;
-          ec2.volumeType = "gp2";
-          ec2.deleteOnTermination = true; # should be false by security
+    value = { resources, ... }:
+      let
+      in {
+        #services.flannel.iface = "eth0"; 
+        deployment.targetEnv = "ec2";
+        deployment.ec2 = {
+          keyPair = resources.ec2KeyPairs.k8s-key-pair;
+          accessKeyId = accessKeyId;
+          region = region;
+          ebsInitialRootDiskSize = 30;
+          usePrivateIpAddress = false;  # should be true if managed within vpc
+          associatePublicIpAddress = true;  # should be false if hidden within vpc
+          #spotInstancePrice = 5;
+          #spotInstanceTimeout = 60;
+          instanceType = machines.workers.aws.instanceType;
+          securityGroupIds =  machines.workers.aws.securityGroupIds;
+          subnetId = machine.aws-subnetId;
+          instanceProfile = "k8sWorker-Instance-Profile";
+          tags = {
+            Environment = environment;
+            Group = "k8s-worker";
+            "kubernetes.io/cluster/${environment}" = "owned"; # ClusterID
+            "k8s.io/role/node" = "1";
+          };
         };
+        fileSystems = {
+          data = {
+            device = "/dev/xvdf";
+            fsType = "xfs";
+            label = "data";
+            autoFormat = true;
+            mountPoint = "/data";
+            ec2.size = machines.workers.aws.storageSize;
+            ec2.volumeType = "gp2";
+            ec2.deleteOnTermination = true; # should be false by security
+          };
+        };
+        services.kubernetes.kubelet.extraOpts = "--cloud-provider=aws";
+
+        # fix route conflict with flannel subnet and AWS instance metadata api
+        networking.dhcpcd.runHook = "ip route add 169.254.169.254/32 dev eth0";
       };
   }; 
   workerServers = map makeWorkerServer machines.workers.configs;
