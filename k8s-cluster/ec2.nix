@@ -32,7 +32,7 @@ let
           tags = {
             Environment = environment;
             Group = "k8s-master";
-            "kubernetes.io/cluster/${environment}" = "owned";
+            "kubernetes.io/cluster/${environment}" = "owned"; # ClusterID
             "k8s.io/role/master" = "1";
           };
         };
@@ -68,7 +68,7 @@ let
           tags = {
             Environment = environment;
             Group = "k8s-worker";
-            "kubernetes.io/cluster/${environment}" = "owned";
+            "kubernetes.io/cluster/${environment}" = "owned"; # ClusterID
             "k8s.io/role/node" = "1";
           };
         };
