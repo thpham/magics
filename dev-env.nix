@@ -8,5 +8,6 @@ in
       (import ./nixops/release.nix {}).build.x86_64-linux
       kubernetes
       kubernetes-helm
+      awscli
     ];
   }
