@@ -2,5 +2,7 @@
 
 $(which git) submodule update --init --recursive
 
+VERSION=4ccb13adb6c39816b7a6ce2efe5a9686f077956b
+
 SYSTEM=$(nix-instantiate --eval --expr "builtins.currentSystem")
-exec nix-shell dev-env.nix --exclude tarball "$@"
+exec nix-shell dev-env.nix -I nixpkgs=https://github.com/thpham/nixpkgs/archive/$VERSION.tar.gz --exclude tarball "$@"
