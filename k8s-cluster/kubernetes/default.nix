@@ -19,7 +19,32 @@ let
     externalDomain = domain;
     serviceClusterIp = "10.0.0.1";
     etcdMasterHosts = builtins.map (hostName: hostName+".${domain}") masterNames;
+    kubelets = attrNames nodes;
   };
+
+  kubeconfig = pkgs.writeText "nixops-kubeconfig.json" (builtins.toJSON {
+    apiVersion = "v1";
+    kind = "Config";
+    clusters = [{
+      name = domain;
+      cluster.certificate-authority = "${certs.master}/ca.pem";
+      cluster.server = "https://${masterHost.config.networking.privateIPv4}";
+    }];
+    users = [{
+      name = "admin";
+      user = {
+        client-certificate = "${certs.admin}/admin.pem";
+        client-key = "${certs.admin}/admin-key.pem";
+      };
+    }];
+    contexts = [{
+      context = {
+        cluster = domain;
+        user = "admin";
+      };
+      current-context = "admin-context";
+    }];
+  });
 
 in
 
@@ -97,7 +122,7 @@ in
     addons = {
       dashboard = {
         enable = true;
-        enableRBAC = false;
+        enableRBAC = true;
       };
       dns = {
         enable = true; ## enable=true by default
@@ -119,10 +144,12 @@ in
       kubeletClientCertFile = "${certs.master}/kubelet-client.pem";
       kubeletClientKeyFile = "${certs.master}/kubelet-client-key.pem";
       serviceAccountKeyFile = "${certs.master}/kube-service-accounts.pem";
-      authorizationMode = ["AlwaysAllow"]; # AlwaysAllow/AlwaysDeny/ABAC/RBAC
+      authorizationMode = ["RBAC" "Node"]; # default # AlwaysAllow/AlwaysDeny/ABAC/RBAC/Node/Webhook
+      #authorizationPolicy = [ ];
       basicAuthFile = pkgs.writeText "users" ''
         kubernetes,admin,0
       '';
+      # admissionControl = [];
       ## should be in the same range than the serviceClusterIp certs
       serviceClusterIpRange = "10.0.0.0/24"; 
     };
@@ -139,8 +166,8 @@ in
       tlsKeyFile = "${certs.worker}/kubelet-key.pem";
       hostname = "${config.networking.hostName}.${config.networking.domain}";
       kubeconfig = {
-        certFile = "${certs.worker}/apiserver-client-kubelet.pem";
-        keyFile = "${certs.worker}/apiserver-client-kubelet-key.pem";
+        certFile = "${certs.worker}/apiserver-client-kubelet-${config.networking.hostName}.pem";
+        keyFile = "${certs.worker}/apiserver-client-kubelet-${config.networking.hostName}-key.pem";
       };
       ## nixos dnsmasq service on master node
       #clusterDns = "${masterHost.config.networking.privateIPv4}";

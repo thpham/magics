@@ -17,6 +17,40 @@
 
   - destroy the cluster: `nixops destroy -d k8s && nixops delete -d k8s && rm .ec2-created`
 
+## Configure kubectl access
+
+After the provisioning, you need to ssh in a master node and edit the ClusterRoleBinding to allow your admin user.
+
+`kubectl edit clusterrolebinding cluster-admin` 
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  creationTimestamp: 2018-05-25T08:32:09Z
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  name: cluster-admin
+  resourceVersion: "84"
+  selfLink: /apis/rbac.authorization.k8s.io/v1/clusterrolebindings/cluster-admin
+  uid: 1d312aa9-5ff6-11e8-b6bc-08002777c2bf
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:masters
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: admin
+```
+
+Then update `kubeconfig.yaml` with the right hostname/ip of kube-apiserver (master)
+
 ### Requirements
 
 use [awscli](https://aws.amazon.com/cli/) to create instance profiles and rules to allow kube-apiserver to interact with AWS API (e.g.: to attach PV to ec2 instances or create ELB ...)
