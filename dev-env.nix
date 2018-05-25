@@ -10,4 +10,6 @@ in
       kubernetes-helm
       awscli
     ];
+
+    KUBECONFIG = "./k8s-cluster/kubeconfig.yaml";
   }
