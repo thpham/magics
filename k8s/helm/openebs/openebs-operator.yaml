@@ -1,0 +1,7 @@
+apiVersion: openebs.io/v1alpha1
+kind: StoragePool
+metadata:
+    name: default   #--Name of the storage pool
+    type: hostdir
+spec:
+    path: "/data"   #--Change the path with mounted path

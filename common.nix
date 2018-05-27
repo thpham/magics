@@ -45,7 +45,7 @@ in {
   };
 
   environment.systemPackages = with pkgs; [
-    dnsutils inetutils htop ncat ngrep tcpdump
+    dnsutils inetutils htop ncat ngrep tcpdump openiscsi
   ];
 
   networking.firewall.logRefusedConnections = false;
