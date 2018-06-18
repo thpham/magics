@@ -46,6 +46,25 @@ let
     }];
   });
 
+  guard = pkgs.buildGoPackage rec {
+    name = "guard-${version}";
+    version = "0.1.3";
+
+    src = pkgs.fetchFromGitHub {
+      owner = "appscode";
+      repo = "guard";
+      rev = "${version}";
+      sha256 = "1jzaqzil6pkyka1bdnhwva9486fb0p0jcvd71y650kkvxy3dr1mn";
+    };
+
+    goPackagePath = "github.com/appscode/guard";
+  };
+
+  # token,user,uid,"group1,group2,group3"
+  tokenAuthFile = pkgs.writeText "token-auth-file" ''
+    02b50b05283e98dd0fd71db496ef01e8,admin,0,"cluster-admin"
+  '';
+
 in
 
 {
@@ -107,6 +126,24 @@ in
     ];
   } else {};
 
+  systemd.services.guard = if isMaster then {
+    description = "Kubernetes Authentication WebHook Server";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network-interfaces.target" ];
+    serviceConfig = {
+      ExecStart = ''${guard}/bin/guard run --v=1 --logtostderr --analytics=false \
+        --auth-providers="token-auth" \
+        --secure-addr="localhost:9443" \
+        --tls-ca-file=${certs.master}/ca.pem \
+        --tls-cert-file=${certs.master}/guard.pem \
+        --tls-private-key-file=${certs.master}/guard-key.pem \
+        --token-auth-file=${tokenAuthFile}
+      '';
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+  } else {};
+
   environment.variables = {
     ETCDCTL_CERT_FILE = "${certs.worker}/etcd-client.pem";
     ETCDCTL_KEY_FILE = "${certs.worker}/etcd-client-key.pem";
@@ -122,7 +159,10 @@ in
     addons = {
       dashboard = {
         enable = true;
-        enableRBAC = true;
+        rbac = {
+          enable = true;
+          clusterAdmin = true;
+        };
       };
       dns = {
         enable = true; ## enable=true by default
@@ -139,15 +179,37 @@ in
     } else {
       # this may be the address of an LB
       advertiseAddress = masterHost.config.networking.privateIPv4;
+      bindAddress = "0.0.0.0";
       tlsCertFile = "${certs.master}/kube-apiserver.pem";
       tlsKeyFile = "${certs.master}/kube-apiserver-key.pem";
       kubeletClientCertFile = "${certs.master}/kubelet-client.pem";
       kubeletClientKeyFile = "${certs.master}/kubelet-client-key.pem";
       serviceAccountKeyFile = "${certs.master}/kube-service-accounts.pem";
-      authorizationMode = ["RBAC" "Node"]; # default # AlwaysAllow/AlwaysDeny/ABAC/RBAC/Node/Webhook
-      #authorizationPolicy = [ ];
+      authorizationMode = ["Node" "RBAC" "Webhook"]; # default # AlwaysAllow/AlwaysDeny/ABAC/Webhook/RBAC/Node
+      #authorizationPolicy = [ ]; #ABAC only
+      webhookConfig = pkgs.writeText "kube-auth-webhook.yaml" ''
+        apiVersion: v1
+        clusters:
+          - name: guard-server
+            cluster:
+              certificate-authority: ${certs.master}/ca.pem
+              server: https://localhost:9443/apis/authentication.k8s.io/v1/tokenreviews
+        current-context: webhook
+        kind: Config
+        preferences: {}
+        contexts:
+        - context:
+            cluster: guard-server
+            user: guard-user
+          name: webhook
+        users:
+          - name: guard-user
+            user:
+              client-certificate: ${certs.master}/guard-client.pem
+              client-key: ${certs.master}/guard-client-key.pem
+      '';
       basicAuthFile = pkgs.writeText "users" ''
-        kubernetes,admin,0
+        kubernetes,admin,0,"cluster-admin"
       '';
       # admissionControl = [];
       ## should be in the same range than the serviceClusterIp certs

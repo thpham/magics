@@ -124,6 +124,18 @@ let
     hosts = ["kubernetes.default" "kubernetes.default.svc" "localhost" "api.${externalDomain}" serviceClusterIp];
   };
 
+  guard = createServingCertKey {
+    inherit ca;
+    cn = "guard";
+    hosts = ["localhost"];
+  };
+
+  guard-client = createClientCertKey {
+    inherit ca;
+    cn = "guard-client";
+    groups = ["token-auth"];
+  };
+
   kubelet = createServingCertKey {
     inherit ca;
     cn = "kubelet";
@@ -193,6 +205,8 @@ in {
     paths = [
       (writeCFSSL (noKey ca))
       (writeCFSSL kube-apiserver)
+      (writeCFSSL guard)
+      (writeCFSSL guard-client)
       (writeCFSSL kubelet-client)
       (writeCFSSL apiserver-client.kube-controller-manager)
       (writeCFSSL apiserver-client.kube-scheduler)

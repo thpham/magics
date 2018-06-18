@@ -1,6 +1,6 @@
 SHELL   := /usr/bin/env bash
 NIXOPS  := $(shell which nixops)
-VERSION := 4ccb13adb6c39816b7a6ce2efe5a9686f077956b
+VERSION := nixpkgs-unstable
 
 all: deploy
 

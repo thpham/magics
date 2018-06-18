@@ -12,10 +12,12 @@ in {
 
   services.nixosManual.enable = false;
 
+  services.osquery.enable = true;
+
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
   services.openssh.passwordAuthentication = false;
-
+  
   users.mutableUsers = false;
   users.motd = "Restricted Access Only";
 
@@ -45,7 +47,7 @@ in {
   };
 
   environment.systemPackages = with pkgs; [
-    dnsutils inetutils htop ncat ngrep tcpdump
+    dnsutils inetutils htop ncat ngrep tcpdump osquery
   ];
 
   networking.firewall.logRefusedConnections = false;
