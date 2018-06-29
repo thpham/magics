@@ -13,8 +13,8 @@ let
         deployment = {
           targetEnv = "virtualbox";
           virtualbox = {
-            vcpu = 1;
-            memorySize = 2048;
+            vcpu = 2;
+            memorySize = 4096;
             headless = true;
             #vmFlags = [];
           };

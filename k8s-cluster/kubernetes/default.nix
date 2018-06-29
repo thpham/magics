@@ -122,7 +122,10 @@ in
     addons = {
       dashboard = {
         enable = true;
-        enableRBAC = true;
+        rbac = {
+          enable = true;
+          clusterAdmin = true;
+        };
       };
       dns = {
         enable = true; ## enable=true by default
@@ -147,7 +150,7 @@ in
       authorizationMode = ["RBAC" "Node"]; # default # AlwaysAllow/AlwaysDeny/ABAC/RBAC/Node/Webhook
       #authorizationPolicy = [ ];
       basicAuthFile = pkgs.writeText "users" ''
-        kubernetes,admin,0
+        kubernetes,admin,0,"cluster-admin"
       '';
       # admissionControl = [];
       ## should be in the same range than the serviceClusterIp certs
