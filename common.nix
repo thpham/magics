@@ -16,6 +16,8 @@ in {
   services.openssh.enable = true;
   services.openssh.passwordAuthentication = false;
 
+  services.osquery.enable = true;
+
   users.mutableUsers = false;
   users.motd = "Restricted Access Only";
 
@@ -46,6 +48,7 @@ in {
 
   environment.systemPackages = with pkgs; [
     dnsutils inetutils htop ncat ngrep tcpdump
+    osquery
   ];
 
   networking.firewall.logRefusedConnections = false;
