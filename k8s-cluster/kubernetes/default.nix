@@ -1,4 +1,4 @@
-{ config, pkgs, nodes, ... }:
+{ config, pkgs, nodes, oidc, ... }:
 
 with pkgs.lib;
 
@@ -142,13 +142,22 @@ in
     } else {
       # this may be the address of an LB
       advertiseAddress = masterHost.config.networking.privateIPv4;
+      bindAddress = "0.0.0.0";
       tlsCertFile = "${certs.master}/kube-apiserver.pem";
       tlsKeyFile = "${certs.master}/kube-apiserver-key.pem";
       kubeletClientCertFile = "${certs.master}/kubelet-client.pem";
       kubeletClientKeyFile = "${certs.master}/kubelet-client-key.pem";
       serviceAccountKeyFile = "${certs.master}/kube-service-accounts.pem";
-      authorizationMode = ["RBAC" "Node"]; # default # AlwaysAllow/AlwaysDeny/ABAC/RBAC/Node/Webhook
+      authorizationMode = ["Node" "RBAC"]; # default # AlwaysAllow/AlwaysDeny/ABAC/RBAC/Node/Webhook
       #authorizationPolicy = [ ];
+      extraOpts = ''
+        --oidc-issuer-url=${oidc.issuer-url} \
+        --oidc-client-id=${oidc.client-id} \
+        --oidc-username-claim=${oidc.username-claim} \
+        --oidc-groups-claim=${oidc.groups-claim} \
+        --oidc-groups-prefix=${oidc.groups-prefix}
+      '';
+      # Disable basicAuth in production
       basicAuthFile = pkgs.writeText "users" ''
         kubernetes,admin,0,"cluster-admin"
       '';
