@@ -26,9 +26,7 @@ let
           rootDiskSize = 30;
           instanceType = machines.masters.gce.instanceType;
           subnet = machine.gce-subnetId;
-          tags = [
-            "k8s-master"
-          ];
+          tags = machines.masters.gce.tags;
           labels = {
             Environment = environment;
             Group = "k8s-master";
@@ -57,9 +55,7 @@ let
           rootDiskSize = 30;
           instanceType = machines.workers.gce.instanceType;
           subnet = machine.gce-subnetId;
-          tags = [
-            "k8s-worker"
-          ];
+          tags = machines.workers.gce.tags;
           labels = {
             Environment = environment;
             Group = "k8s-worker";
