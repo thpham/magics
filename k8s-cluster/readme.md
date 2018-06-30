@@ -47,6 +47,9 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
   name: admin
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: oidc:/k8s/cluster-admin
 ```
 
 Then update `kubeconfig.yaml` with the right hostname/ip of kube-apiserver (master)

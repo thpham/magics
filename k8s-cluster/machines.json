@@ -1,4 +1,11 @@
 {
+  "oidc": {
+    "issuer-url": "https://{your_idP_domain}/auth/realms/master",
+    "client-id": "kubernetes",
+    "username-claim": "email",
+    "groups-claim": "groups",
+    "groups-prefix": "oidc:"
+  },
   "masters": {
     "aws": {"securityGroupIds": [ "sg-" ], "instanceType": "m4.large" },
     "configs": [

@@ -6,8 +6,16 @@ let
   makeMasterServer = machine: {   
     name  = machine.name;
     value =
-      { config, pkgs, lib, ... }:
-      {
+      { config, pkgs, lib, nodes, ... }:
+      let
+        kubernetes = import ./kubernetes {
+          inherit config pkgs nodes; 
+          oidc = machines.oidc;
+        };
+      in {
+        imports = [
+          kubernetes
+        ];
         services.kubernetes.roles = [ "master" ];
         services.zerotierone.enable = true;
       };
@@ -17,8 +25,16 @@ let
   makeWorkerServer = machine: {   
     name  = machine.name;
     value =
-      { config, pkgs, lib, ... }:
-      {
+      { config, pkgs, lib, nodes, ... }:
+      let
+        kubernetes = import ./kubernetes {
+          inherit config pkgs nodes; 
+          oidc = machines.oidc;
+        };
+      in {
+        imports = [
+          kubernetes
+        ];
         services.kubernetes.roles = [ "node" ];
       };
   }; 
@@ -30,7 +46,6 @@ in {
 
   defaults.imports = [
     ../common.nix
-    ./kubernetes
   ];
 
 }
