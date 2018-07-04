@@ -49,9 +49,14 @@ let
 in
 
 {
+  imports = [
+    ./addons/heapster.nix
+  ];
 
   networking = {
     inherit domain;
+
+    enableIPv6 = false;
 
     extraHosts = ''
       ${masterHost.config.networking.privateIPv4}  api.${domain}
@@ -61,10 +66,12 @@ in
     firewall = {
       allowedTCPPorts = if isMaster then [
         10250      # kubelet
+        10255      # kubelet read-only port
         2379 2380  # etcd
         443        # kubernetes apiserver
       ] else [
         10250      # kubelet
+        10255      # kubelet read-only port
       ];
 
       trustedInterfaces = [ "docker0" "flannel.1" "zt0" ];
@@ -128,8 +135,12 @@ in
         };
       };
       dns = {
-        enable = true; ## enable=true by default
+        enable = true;
         clusterDomain = "cluster.local";
+      };
+      heapster = {
+        enable = true;
+        rbac.enable = true;
       };
     };
     verbose = true;
@@ -183,6 +194,9 @@ in
       };
       ## nixos dnsmasq service on master node
       #clusterDns = "${masterHost.config.networking.privateIPv4}";
+      extraOpts = ''
+        --read-only-port=10255
+      '';
     };
     controllerManager = {
       serviceAccountKeyFile = "${certs.master}/kube-service-accounts-key.pem";
