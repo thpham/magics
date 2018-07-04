@@ -49,9 +49,14 @@ let
 in
 
 {
+  imports = [
+    ./addons/metrics-server.nix
+  ];
 
   networking = {
     inherit domain;
+
+    enableIPv6 = false;
 
     extraHosts = ''
       ${masterHost.config.networking.privateIPv4}  api.${domain}
@@ -61,10 +66,12 @@ in
     firewall = {
       allowedTCPPorts = if isMaster then [
         10250      # kubelet
+        10255      # kubelet read-only port
         2379 2380  # etcd
         443        # kubernetes apiserver
       ] else [
         10250      # kubelet
+        10255      # kubelet read-only port
       ];
 
       trustedInterfaces = [ "docker0" "flannel.1" "zt0" ];
@@ -124,12 +131,16 @@ in
         enable = true;
         rbac = {
           enable = true;
-          clusterAdmin = true;
+          #clusterAdmin = true;
         };
       };
       dns = {
         enable = true; ## enable=true by default
         clusterDomain = "cluster.local";
+      };
+      metrics-server = {
+        enable = true;
+        rbac.enable = true;
       };
     };
     verbose = true;
@@ -155,8 +166,16 @@ in
         --oidc-client-id=${oidc.client-id} \
         --oidc-username-claim=${oidc.username-claim} \
         --oidc-groups-claim=${oidc.groups-claim} \
-        --oidc-groups-prefix=${oidc.groups-prefix}
+        --oidc-groups-prefix=${oidc.groups-prefix} \
+        --proxy-client-cert-file=${certs.master}/aggregator-proxy-client.pem \
+        --proxy-client-key-file=${certs.master}/aggregator-proxy-client-key.pem \
+        --requestheader-client-ca-file=${certs.master}/aggregator.pem \
+        --requestheader-allowed-names=aggregator \
+        --requestheader-extra-headers-prefix=x-remote-extra- \
+        --requestheader-group-headers=x-remote-group \
+        --requestheader-username-headers=x-remote-user 
       '';
+      #  --enable-aggregator-routing=true 
       # Disable basicAuth in production
       basicAuthFile = pkgs.writeText "users" ''
         kubernetes,admin,0,"cluster-admin"
@@ -183,6 +202,9 @@ in
       };
       ## nixos dnsmasq service on master node
       #clusterDns = "${masterHost.config.networking.privateIPv4}";
+      extraOpts = ''
+        --read-only-port=10255
+      '';
     };
     controllerManager = {
       serviceAccountKeyFile = "${certs.master}/kube-service-accounts-key.pem";

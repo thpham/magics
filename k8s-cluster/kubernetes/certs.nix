@@ -117,6 +117,9 @@ let
     };
 
   ca = createSigningCertKey {};
+  aggregator-ca = createSigningCertKey {
+    CN = "aggregator";
+  };
 
   kube-apiserver = createServingCertKey {
     inherit ca;
@@ -128,6 +131,12 @@ let
     inherit ca;
     cn = "kubelet";
     hosts = ["*.${externalDomain}"];
+  };
+
+  aggregator-proxy-client = createClientCertKey {
+    ca = aggregator-ca;
+    cn = "aggregator";
+    name = "aggregator-proxy-client";
   };
 
   service-accounts = createServingCertKey {
@@ -192,6 +201,8 @@ in {
     name = "master-keys";
     paths = [
       (writeCFSSL (noKey ca))
+      (writeCFSSL (noKey aggregator-ca))
+      (writeCFSSL aggregator-proxy-client)
       (writeCFSSL kube-apiserver)
       (writeCFSSL kubelet-client)
       (writeCFSSL apiserver-client.kube-controller-manager)
