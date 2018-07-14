@@ -172,7 +172,17 @@ in
       basicAuthFile = pkgs.writeText "users" ''
         kubernetes,admin,0,"cluster-admin"
       '';
-      # admissionControl = [];
+      enableAdmissionPlugins = [
+        "NamespaceLifecycle"
+        "LimitRanger"
+        "ServiceAccount"
+        "ResourceQuota"
+        "DefaultStorageClass"
+        "DefaultTolerationSeconds"
+        "NodeRestriction"
+        "MutatingAdmissionWebhook"
+        "ValidatingAdmissionWebhook"
+      ];
       ## should be in the same range than the serviceClusterIp certs
       serviceClusterIpRange = "10.0.0.0/24"; 
     };
