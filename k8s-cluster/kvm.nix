@@ -8,16 +8,13 @@ let
     value =
       { ... }:
       {
-        # because of interface creation order in vbox
-        services.flannel.iface = "enp0s8";
         deployment = {
-          targetEnv = "virtualbox";
-          virtualbox = {
+          targetEnv = "libvirtd";
+          libvirtd = {
             vcpu = 2;
             memorySize = 4096;
             headless = true;
-            #vmFlags = [];
-            disks.disk1.size = 20480;
+            baseImageSize = 20;
           };
         };
       };
@@ -29,30 +26,14 @@ let
     value =
       { ... }:
       {
-        # because of interface creation order in vbox
-        services.flannel.iface = "enp0s8";
         deployment = {
-          targetEnv = "virtualbox";
-          virtualbox = {
+          targetEnv = "libvirtd";
+          libvirtd = {
             vcpu = 2;
             memorySize = 4096;
             headless = true;
-            #vmFlags = [];
-            disks = {
-              disk1.size = 20480;
-              data = {
-                port = 1;
-                size = 5120; # 5Gb just as a test
-              };
-            };
+            baseImageSize = 20;
           };
-        };
-        fileSystems.data = {
-          device = "/dev/sdb";
-          fsType = "xfs";
-          label = "data";
-          autoFormat = true;
-          mountPoint = "/data";
         };
       };
   };

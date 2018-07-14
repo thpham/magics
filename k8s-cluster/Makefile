@@ -6,7 +6,7 @@ all: deploy
 
 .created:
 	$(NIXOPS) list | grep "k8s-cluster" || \
-	$(NIXOPS) create deployment.nix vbox.nix -d k8s \
+	$(NIXOPS) create deployment.nix kvm.nix -d k8s \
 		-I nixpkgs=https://github.com/thpham/nixpkgs/archive/$(VERSION).tar.gz
 	touch .created
 
@@ -21,7 +21,7 @@ test: check
 check: build
 
 build: .created
-	$(NIXOPS) modify deployment.nix vbox.nix -d k8s \
+	$(NIXOPS) modify deployment.nix kvm.nix -d k8s \
 	  -I nixpkgs=https://github.com/thpham/nixpkgs/archive/$(VERSION).tar.gz
 	$(NIXOPS) deploy -d k8s --build-only
 
