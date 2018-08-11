@@ -116,6 +116,105 @@ $ aws iam add-role-to-instance-profile --role-name k8sWorker --instance-profile-
 ```
 
 
+# Mesh services observability
+
+## istio-1.0
+
+```
+ helm template install/kubernetes/helm/istio \
+  --set grafana.enabled=true --set servicegraph.enabled=true \
+  --set tracing.enabled=true  --set kiali.enabled=true \
+  --name istio --namespace istio-system \
+  > /home/tpham/iThings/repos/magics/k8s-cluster/istio.yaml
+```
+
+# Local dynamic storage provisioning
+
+```
+
+modprobe -b configfs
+
+modprobe -b target_core_mod
+modprobe -b tcm_loop
+modprobe -b target_core_file
+```
+
+```
+export ip4=$(ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
+
+docker run -d --restart unless-stopped --name storageos \
+  -e HOSTNAME \
+  -e ADVERTISE_IP=$ip4 \
+  -e JOIN=$ip4 \
+  --net=host \
+  --pid=host \
+  --privileged \
+  --cap-add SYS_ADMIN \
+  --device /dev/fuse \
+  -v /sys:/sys \
+  -v /data/private/storageos:/var/lib/storageos:rshared \
+  -v /run/docker/plugins:/run/docker/plugins \
+  storageos/node:1.0.0-rc4 server
+```
+
+You can then browse the StorageOS Web UI: http://localhost:5705/
+
+```
+export STORAGEOS_USERNAME=storageos STORAGEOS_PASSWORD=storageos STORAGEOS_HOST=$ip4
+
+echo -n "tcp://$ip4:5705" | base64
+
+cat > storageos-secret.yaml <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: storageos-api
+type: "kubernetes.io/storageos"
+data:
+  apiAddress: dGNwOi8vMTkyLjE2OC41NS4xMDA6NTcwNQ==
+  apiUsername: c3RvcmFnZW9z
+  apiPassword: c3RvcmFnZW9z
+EOF
+
+kubectl create -f storageos-secret.yaml
+
+cat > storageos-sc.yaml <<EOF
+kind: StorageClass
+apiVersion: storage.k8s.io/v1beta1
+metadata:
+  name: standard
+  annotations:
+    "storageclass.kubernetes.io/is-default-class": "true"
+provisioner: kubernetes.io/storageos
+parameters:
+  pool: default
+  description: Kubernetes volume
+  fsType: ext4
+  adminSecretNamespace: default
+  adminSecretName: storageos-api
+EOF
+
+kubectl create -f storageos-sc.yaml
+
+cat > storageos-sc-pvc.yaml <<EOF
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: standard0001
+  annotations:
+    "volume.beta.kubernetes.io/storage-class": standard
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+EOF
+
+kubectl create -f storageos-sc-pvc.yaml
+```
+
 # TODO:
 
  - fix: flannel subnet problem, to avoid doing `ip route add 169.254.169.254/32 dev eth0` on each hosts after deployment.
