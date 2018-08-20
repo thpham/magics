@@ -10,9 +10,7 @@
     "aws": {"securityGroupIds": [ "sg-" ], "instanceType": "m4.large" },
     "gce": {"tags": ["k8s-master"], "instanceType": "n1-standard-2" },
     "configs": [
-      {"id": 0, "name": "master-0", "aws-subnetId": "subnet-", "gce-subnetId": "default"},
-      {"id": 1, "name": "master-1", "aws-subnetId": "subnet-", "gce-subnetId": "default"},
-      {"id": 2, "name": "master-2", "aws-subnetId": "subnet-", "gce-subnetId": "default"}
+      {"id": 0, "name": "master-0", "aws-subnetId": "subnet-", "gce-subnetId": "default"}
     ]
   },
   "workers": {
@@ -20,7 +18,8 @@
     "gce": { "tags": ["k8s-worker"], "instanceType": "n1-standard-2", "storageSize": 20 },
     "configs": [
       {"id": 0, "name": "worker-0", "aws-subnetId": "subnet-", "gce-subnetId": "default"},
-      {"id": 1, "name": "worker-1", "aws-subnetId": "subnet-", "gce-subnetId": "default"}
+      {"id": 1, "name": "worker-1", "aws-subnetId": "subnet-", "gce-subnetId": "default"},
+      {"id": 2, "name": "worker-2", "aws-subnetId": "subnet-", "gce-subnetId": "default"}
     ]
   }
 }
