@@ -1,0 +1,38 @@
+--- a/CMakeLists.txt	2017-01-24 17:08:15.457641278 +0100
++++ b/CMakeLists.txt	2017-01-24 17:09:13.551437772 +0100
+@@ -304,30 +304,12 @@
+ endif("${POSTGRESQL_VERSION}" VERSION_LESS "${POSTGRESQL_MINIMUM_VERSION}")
+ 
+ 
+-execute_process(
+-    COMMAND ${POSTGRESQL_PG_CONFIG} --pkglibdir
+-    OUTPUT_STRIP_TRAILING_WHITESPACE
+-    OUTPUT_VARIABLE LIB_DIR)
++set(LIBRARY_INSTALL_PATH $ENV{out}/lib)
++set(LIB_DIR $ENV{out}/lib)
++message(STATUS "Install directory for libraries is set to ${LIB_DIR}")
+ 
+-if(LIB_DIR)
+-    message(STATUS "Install directory for libraries is set to ${LIB_DIR}")
+-else(LIB_DIR)
+-    message(FATAL_ERROR "pg_config --pkglibdir failed to return a value. Please check your PostgreSQL installation!")
+-endif(LIB_DIR)
+-
+-set(LIBRARY_INSTALL_PATH ${LIB_DIR})
+-
+-execute_process(
+-    COMMAND ${POSTGRESQL_PG_CONFIG} --sharedir
+-    OUTPUT_STRIP_TRAILING_WHITESPACE
+-    OUTPUT_VARIABLE SHARE_DIR)
+-
+-if(SHARE_DIR)
+-    set(SHARE_DIR "${SHARE_DIR}/extension")
+-    message(STATUS "Extension directory for SQL files is set to ${SHARE_DIR}")
+-else(SHARE_DIR)
+-    message(FATAL_ERROR "pg_config --sharedir failed to return a value. Please check your PostgreSQL installation!")
+-endif(SHARE_DIR)
++set(SHARE_DIR $ENV{out}/share/extension)
++message(STATUS "Extension directory for SQL files is set to ${SHARE_DIR}")
+ 
+ #-------------------------------------
+ # Handles documentation
