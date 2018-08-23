@@ -1,13 +1,21 @@
 { pkgs, ...}:
 let
- 
+
 in {
+  nixpkgs.overlays = [ (import ./overlays.nix) ];
+
   security.sudo = {
     enable = true;
     wheelNeedsPassword = false;
   };
 
   services.ntp.enable = true;
+  networking.timeServers = [
+    "0.ch.pool.ntp.org"
+    "1.ch.pool.ntp.org"
+    "2.ch.pool.ntp.org"
+    "3.ch.pool.ntp.org"
+  ];
   time.timeZone = "Europe/Zurich";
 
   services.nixosManual.enable = false;
