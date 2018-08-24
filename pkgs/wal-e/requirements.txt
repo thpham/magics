@@ -1,0 +1,13 @@
+gevent==1.2.2
+boto>=2.40.0
+google-cloud-storage>=1.4.0
+python-swiftclient>=3.0.0
+python-keystoneclient>=3.0.0
+azure==3.0.0
+azure-nspkg>=2.0.0
+azure-cosmosdb-nspkg>=2.0.0
+azure-storage-nspkg>=2.0.0
+azure-mgmt-nspkg>=2.0.0
+azure-mgmt-datalake-nspkg>=2.0.0
+python-dateutil==2.7.1
+msrestazure==0.4.34

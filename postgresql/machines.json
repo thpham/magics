@@ -1,0 +1,8 @@
+{
+  "postgres": {
+    "aws": {"securityGroupIds": [ "sg-" ], "instanceType": "m4.large", "storageSize": 30 },
+    "configs": [
+      {"id": 0, "name": "postgres-0", "aws-subnetId": "subnet-", "targetHost": "192.168.56.103"}
+    ]
+  }
+}

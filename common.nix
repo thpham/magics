@@ -1,13 +1,21 @@
 { pkgs, ...}:
 let
- 
+
 in {
+  nixpkgs.overlays = [ (import ./overlays.nix) ];
+
   security.sudo = {
     enable = true;
     wheelNeedsPassword = false;
   };
 
   services.ntp.enable = true;
+  networking.timeServers = [
+    "0.ch.pool.ntp.org"
+    "1.ch.pool.ntp.org"
+    "2.ch.pool.ntp.org"
+    "3.ch.pool.ntp.org"
+  ];
   time.timeZone = "Europe/Zurich";
 
   services.nixosManual.enable = false;
@@ -16,7 +24,17 @@ in {
   services.openssh.enable = true;
   services.openssh.passwordAuthentication = false;
 
-  services.osquery.enable = true;
+  ## osquery-2.5.2 is marked as broken
+  #services.osquery.enable = true;
+
+  services.logrotate.enable = true;
+  services.prometheus.exporters = {
+    node = {
+      enable = true;
+      openFirewall = true;
+      #enabledCollectors = [];
+    };
+  };
 
   users.mutableUsers = false;
   users.motd = "Restricted Access Only";
@@ -48,7 +66,7 @@ in {
 
   environment.systemPackages = with pkgs; [
     dnsutils inetutils htop ncat ngrep tcpdump
-    osquery
+    #osquery
   ];
 
   networking.firewall.logRefusedConnections = false;
