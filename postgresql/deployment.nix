@@ -8,11 +8,12 @@ let
     value =
       { config, pkgs, lib, nodes , ... }:
       let
-
+        configs = import ./configs.nix { inherit pkgs; };
       in {
         #networking.firewall.enable = false;
         networking.firewall.allowedTCPPorts = [
           5432  # PostgreSQL
+          8888  # powa-web
           9187  # prometheus postgres_exporter
         ];
 
@@ -22,12 +23,25 @@ let
           extraPlugins = with pkgs; [ postgis_2_3 pgrouting pg_qualstats pg_stat_kcache powa-archivist ];
           enableTCPIP = true;
           dataDir = "/data/postgresql/9.6";
-          authentication = ''
-            local   all           all                        trust
-            host    all           all      127.0.0.1/32      trust
-            host    all           all      ::1/128           trust
-            host    all           all      192.168.0.0/16    md5
-          '';
+          initialScript = "${configs.postgresInitScript}";
+          extraConfig = configs.postgres-conf;
+          authentication = configs.pg_hba;
+        };
+
+        users.groups.powa = {};
+        users.users.powa = {
+          name  = "powa";
+          group = "powa";
+          description = "powa-web server user";
+        };
+        
+        environment.etc = {
+          powa-web-config = {
+            source = "${configs.powa-web-config}";
+            target = "powa-web.conf";
+            user = "powa";
+            mode = "0400";
+          };
         };
 
         systemd.services = {
@@ -36,11 +50,21 @@ let
             wantedBy = [ "multi-user.target" ];
             after = [ "network-interfaces.target" ];
             environment = {
-              DATA_SOURCE_NAME="postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable";
+              DATA_SOURCE_NAME="postgresql://postgres_exporter:Aechoh7yoogi@localhost:5432/postgres?sslmode=disable";
             };
             serviceConfig = {
               User = "postgres";
               ExecStart = "${pkgs.prometheus-postgres-exporter}/bin/postgres_exporter";
+              Restart = "always";
+            };
+          };
+          powa-web = {
+            description = "Web interface for PoWa project";
+            wantedBy = [ "multi-user.target" ];
+            after = [ "network-interfaces.target" ];
+            serviceConfig = {
+              User = "powa";
+              ExecStart = "${pkgs.powa-web}/bin/powa-web";
               Restart = "always";
             };
           };

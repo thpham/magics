@@ -14,6 +14,7 @@ with pkgs;
   pg_qualstats   = callPackage ./pkgs/powa-team/pg_qualstats.nix { };
   pg_stat_kcache = callPackage ./pkgs/powa-team/pg_stat_kcache.nix { };
   powa-archivist = callPackage ./pkgs/powa-team/powa-archivist.nix { };
+  powa-web = callPackage ./pkgs/powa-team/powa-web.nix { };
 
   prometheus-postgres-exporter = callPackage ./pkgs/prometheus-postgres-exporter { };
 
