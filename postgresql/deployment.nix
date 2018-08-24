@@ -8,7 +8,6 @@ let
     value =
       { config, pkgs, lib, nodes , ... }:
       let
-        #postgis = (pkgs.postgis.override { postgresql = pkgs.postgresql96; });
 
       in {
         #networking.firewall.enable = false;
@@ -20,7 +19,7 @@ let
         services.postgresql = {
           enable = true;
           package = pkgs.postgresql96;
-          extraPlugins = with pkgs; [ postgis pgrouting pg_qualstats pg_stat_kcache powa-archivist ];
+          extraPlugins = with pkgs; [ postgis_2_3 pgrouting pg_qualstats pg_stat_kcache powa-archivist ];
           enableTCPIP = true;
           dataDir = "/data/postgresql/9.6";
           authentication = ''
