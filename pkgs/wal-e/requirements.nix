@@ -2,7 +2,7 @@
 # See more at: https://github.com/garbas/pypi2nix
 #
 # COMMAND:
-#   pypi2nix -v -V 3.6 --default-overrides --basename wal-e -E libffi openssl -r requirements.txt
+#   pypi2nix -v -V 3.6 --default-overrides -E libffi openssl glibcLocales -r requirements.txt
 #
 
 { pkgs ? import <nixpkgs> {},
@@ -35,7 +35,7 @@ let
       };
   };
 
-  commonBuildInputs = with pkgs; [ libffi openssl ];
+  commonBuildInputs = with pkgs; [ libffi openssl glibcLocales ];
   commonDoCheck = false;
 
   withPackages = pkgs':
@@ -137,6 +137,24 @@ let
       };
     };
 
+    "SecretStorage" = python.mkDerivation {
+      name = "SecretStorage-3.0.1";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/65/02/1f0d2a7b1221bc9a15f8b8d4de2c8ad8272c4d0af76cbdc72e2cf51d42e0/SecretStorage-3.0.1.tar.gz"; sha256 = "819087ca89c0d6c5711692f41fb26f786af9dcc5bb89d567722a66edfbb2a689"; };
+      doCheck = commonDoCheck;
+      checkPhase = "";
+      installCheckPhase = "";
+      buildInputs = commonBuildInputs;
+      propagatedBuildInputs = [
+      self."cryptography"
+      self."jeepney"
+    ];
+      meta = with pkgs.stdenv.lib; {
+        homepage = "https://github.com/mitya57/secretstorage";
+        license = licenses.bsdOriginal;
+        description = "Python bindings to FreeDesktop.org Secret Service API";
+      };
+    };
+
     "adal" = python.mkDerivation {
       name = "adal-1.0.2";
       src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/80/65/d62a4b43eca475cf865ffc2acc18be08fe3430f374b0a0d931d7063b5d72/adal-1.0.2.tar.gz"; sha256 = "4c020807b3f3cfd90f59203077dd5e1f59671833f8c3c5028ec029ed5072f9ce"; };
@@ -173,21 +191,19 @@ let
     };
 
     "azure" = python.mkDerivation {
-      name = "azure-4.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/8e/7e/c744cd290906a1069f4d7481cf6cf30a9e42fa21b6b3f36f28d2acaeff1a/azure-4.0.0.zip"; sha256 = "7d6afa332fccffe1a9390bcfac5122317eec657c6029f144d794603a81cd0e50"; };
+      name = "azure-3.0.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/d0/52/713a87dc433e576dfc344c0406fdb9e649fb7e9af3fa4d07a61553e18003/azure-3.0.0.zip"; sha256 = "4380c1ef6ad34f9ecf41a84b8f24f56804825cff7ce43c4fded0fb75ff90b396"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
-      self."azure-applicationinsights"
       self."azure-batch"
       self."azure-cosmosdb-table"
       self."azure-datalake-store"
       self."azure-eventgrid"
       self."azure-graphrbac"
       self."azure-keyvault"
-      self."azure-loganalytics"
       self."azure-mgmt"
       self."azure-servicebus"
       self."azure-servicefabric"
@@ -203,24 +219,6 @@ let
       };
     };
 
-    "azure-applicationinsights" = python.mkDerivation {
-      name = "azure-applicationinsights-0.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/a5/05/17986d75568a51e16e993f50331366035d33b02aea9e4cd4828ba9ea2ddb/azure-applicationinsights-0.1.0.zip"; sha256 = "6e1839169bb6ffd2d2c21ee3f4afbdd068ea428ad47cf884ea3167ecf7fd0859"; };
-      doCheck = commonDoCheck;
-      checkPhase = "";
-      installCheckPhase = "";
-      buildInputs = commonBuildInputs;
-      propagatedBuildInputs = [
-      self."azure-common"
-      self."msrest"
-    ];
-      meta = with pkgs.stdenv.lib; {
-        homepage = "https://github.com/Azure/azure-sdk-for-python";
-        license = licenses.mit;
-        description = "Microsoft Azure Application Insights Client Library for Python";
-      };
-    };
-
     "azure-batch" = python.mkDerivation {
       name = "azure-batch-4.1.3";
       src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/89/45/b79192d40f82588823ff46bd27941e419758ab6628ec3d7d06ddee1434ec/azure-batch-4.1.3.zip"; sha256 = "cd71c7ebb5beab174b6225bbf79ae18d6db0c8d63227a7e514da0a75f138364c"; };
@@ -230,6 +228,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -247,12 +246,30 @@ let
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
+      self."azure-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
         description = "Microsoft Azure Client Library for Python (Common)";
+      };
+    };
+
+    "azure-cosmosdb-nspkg" = python.mkDerivation {
+      name = "azure-cosmosdb-nspkg-2.0.2";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/91/1b/68df002d2b3992da134244c27ca2380ad8159535391373fac66d7fb5f9fa/azure-cosmosdb-nspkg-2.0.2.tar.gz"; sha256 = "acf691e692818d9a65c653c7a3485eb8e35c0bdc496bba652e5ea3905ba09cd8"; };
+      doCheck = commonDoCheck;
+      checkPhase = "";
+      installCheckPhase = "";
+      buildInputs = commonBuildInputs;
+      propagatedBuildInputs = [
+      self."azure-nspkg"
+    ];
+      meta = with pkgs.stdenv.lib; {
+        homepage = "https://github.com/Azure/azure-cosmosdb-python";
+        license = licenses.asl20;
+        description = "Microsoft Azure CosmosDB Namespace Package [Internal]";
       };
     };
 
@@ -265,6 +282,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-cosmosdb-nspkg"
       self."azure-storage-common"
       self."cryptography"
       self."python-dateutil"
@@ -278,14 +296,15 @@ let
     };
 
     "azure-datalake-store" = python.mkDerivation {
-      name = "azure-datalake-store-0.0.27";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/82/22/e546bad3b8467e0ca386d5497a3001bfdf049d11c75ceb24f6cddfff543b/azure-datalake-store-0.0.27.tar.gz"; sha256 = "c13f73b02264a71ab450331a5c3d49cc70d3e8ada67443bfc148262e907fd5b8"; };
+      name = "azure-datalake-store-0.0.29";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/1b/f5/666b3a49c05b4328d180636b30a122afec781cea8979f9f96e054d1603c9/azure-datalake-store-0.0.29.tar.gz"; sha256 = "9493de3bbee9762f1dc7d7d81e30f9bbf092d571394ad7c80dfafafa6ec81c3e"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."adal"
+      self."azure-nspkg"
       self."cffi"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -296,15 +315,16 @@ let
     };
 
     "azure-eventgrid" = python.mkDerivation {
-      name = "azure-eventgrid-1.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/28/c2/9d7319490b61e32abeb4749f14547c606139fb24de6c5e738322ff115a3c/azure-eventgrid-1.1.0.zip"; sha256 = "fca3d830bf887fcc61fa71cb541531c9e155a4437d861149cbfb842d36fb272f"; };
+      name = "azure-eventgrid-0.1.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/67/59/698b2908cc71bf8d272625835c89fb3350c139d58b732f873230f9cb59aa/azure-eventgrid-0.1.0.zip"; sha256 = "33816fa4912786ea55ca610837685f23e2de8d1b1968cef917ba0a64a8c92b4a"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
-      self."msrestazure"
+      self."azure-nspkg"
+      self."msrest"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
@@ -322,6 +342,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -332,18 +353,16 @@ let
     };
 
     "azure-keyvault" = python.mkDerivation {
-      name = "azure-keyvault-1.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/8e/47/b71d7ab466189d0663a8aa216e4cc67eb16d5dfc7d69b62a9140dd8d1a20/azure-keyvault-1.1.0.zip"; sha256 = "37a8e5f376eb5a304fcd066d414b5d93b987e68f9212b0c41efa37d429aadd49"; };
+      name = "azure-keyvault-0.3.7";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/10/92/24d4371d566f447e2b4ecebb9c360ca52e80f0a3381504974b0e37d865e7/azure-keyvault-0.3.7.zip"; sha256 = "549fafb04e1a3af1fdc94ccde05d59180d637ff6485784f716e7ddb30e6dd0ff"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
-      self."cryptography"
-      self."msrest"
+      self."azure-nspkg"
       self."msrestazure"
-      self."requests"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
@@ -352,27 +371,9 @@ let
       };
     };
 
-    "azure-loganalytics" = python.mkDerivation {
-      name = "azure-loganalytics-0.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/7a/37/6d296ee71319f49a93ea87698da2c5326105d005267d58fb00cb9ec0c3f8/azure-loganalytics-0.1.0.zip"; sha256 = "3ceb350def677a351f34b0a0d1637df6be0c6fe87ff32a5270b17f540f6da06e"; };
-      doCheck = commonDoCheck;
-      checkPhase = "";
-      installCheckPhase = "";
-      buildInputs = commonBuildInputs;
-      propagatedBuildInputs = [
-      self."azure-common"
-      self."msrest"
-    ];
-      meta = with pkgs.stdenv.lib; {
-        homepage = "https://github.com/Azure/azure-sdk-for-python";
-        license = licenses.mit;
-        description = "Microsoft Azure Log Analytics Client Library for Python";
-      };
-    };
-
     "azure-mgmt" = python.mkDerivation {
-      name = "azure-mgmt-4.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/b3/2d/800b26d5a1b3650c8a96161793be08687e75976ec8df91027afd2f31ab55/azure-mgmt-4.0.0.zip"; sha256 = "8dcbee7b323c3898ae92f5e2d88c3e6201f197ae48a712970929c4646cc2580a"; };
+      name = "azure-mgmt-2.0.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/3f/2e/f1a9cfe65ef594f715c5276be70d829ec6c8ab08684fff91d6ab225186c8/azure-mgmt-2.0.0.zip"; sha256 = "c027defac273731a3cebba6dbda560b965f4dbc47b7b16b73cce5fa98a3ba4de"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
@@ -396,30 +397,24 @@ let
       self."azure-mgmt-datafactory"
       self."azure-mgmt-datalake-analytics"
       self."azure-mgmt-datalake-store"
-      self."azure-mgmt-datamigration"
-      self."azure-mgmt-devspaces"
       self."azure-mgmt-devtestlabs"
       self."azure-mgmt-dns"
       self."azure-mgmt-eventgrid"
       self."azure-mgmt-eventhub"
       self."azure-mgmt-hanaonazure"
-      self."azure-mgmt-iotcentral"
       self."azure-mgmt-iothub"
       self."azure-mgmt-iothubprovisioningservices"
       self."azure-mgmt-keyvault"
       self."azure-mgmt-loganalytics"
       self."azure-mgmt-logic"
       self."azure-mgmt-machinelearningcompute"
-      self."azure-mgmt-managementgroups"
       self."azure-mgmt-managementpartner"
-      self."azure-mgmt-maps"
       self."azure-mgmt-marketplaceordering"
       self."azure-mgmt-media"
       self."azure-mgmt-monitor"
       self."azure-mgmt-msi"
       self."azure-mgmt-network"
       self."azure-mgmt-notificationhubs"
-      self."azure-mgmt-policyinsights"
       self."azure-mgmt-powerbiembedded"
       self."azure-mgmt-rdbms"
       self."azure-mgmt-recoveryservices"
@@ -430,9 +425,9 @@ let
       self."azure-mgmt-resource"
       self."azure-mgmt-scheduler"
       self."azure-mgmt-search"
+      self."azure-mgmt-servermanager"
       self."azure-mgmt-servicebus"
       self."azure-mgmt-servicefabric"
-      self."azure-mgmt-signalr"
       self."azure-mgmt-sql"
       self."azure-mgmt-storage"
       self."azure-mgmt-subscription"
@@ -455,6 +450,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -473,6 +469,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -483,14 +480,15 @@ let
     };
 
     "azure-mgmt-authorization" = python.mkDerivation {
-      name = "azure-mgmt-authorization-0.50.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/3e/8f/ccb1117884ffd81862ed03359c90aace89e9d2faa8bb50e35e7fb85154c3/azure-mgmt-authorization-0.50.0.zip"; sha256 = "535de12ff4f628b62b939ae17cc6186226d7783bf02f242cdd3512ee03a6a40e"; };
+      name = "azure-mgmt-authorization-0.30.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/27/ed/e857a8d638fe605c24ca11fe776edad2b0ff697e2395fff25db254b37dfb/azure-mgmt-authorization-0.30.0.zip"; sha256 = "ff965fe74916974a51e834615b7204f494a1bad42ad8d43874bd879855554466"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -509,6 +507,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -519,14 +518,15 @@ let
     };
 
     "azure-mgmt-batchai" = python.mkDerivation {
-      name = "azure-mgmt-batchai-2.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/fa/7f/0a9e5aa22ea91db0771c267c4815396516177702a4a4eea389eed7af47dd/azure-mgmt-batchai-2.0.0.zip"; sha256 = "f1870b0f97d5001cdb66208e5a236c9717a0ed18b34dbfdb238a828f3ca2a683"; };
+      name = "azure-mgmt-batchai-0.2.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/5c/e7/d29acdca0136c9e74cfcf8d78a12e9f890f77a66b375de7351f95dd2015e/azure-mgmt-batchai-0.2.0.zip"; sha256 = "35bda8468cedd0da03841789d96386f2d06d3789e53df72d9b620ac44e6b6f80"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -537,32 +537,34 @@ let
     };
 
     "azure-mgmt-billing" = python.mkDerivation {
-      name = "azure-mgmt-billing-0.2.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/24/35/3b9da47363a300203c324b572a1ae3c096dc031905d582d5a27bd59a8d4e/azure-mgmt-billing-0.2.0.zip"; sha256 = "85f73bb3808a7d0d2543307e8f41e5b90a170ad6eeedd54fe7fcaac61b5b22d2"; };
+      name = "azure-mgmt-billing-0.1.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/53/78/fccfdc17d9c22757a58ce96b6f46d6c136f56672e7f1f74032129d64a4ad/azure-mgmt-billing-0.1.0.zip"; sha256 = "56a4365ac272f0221f79396aaabb2217f5b5eb970d28f3d80f83efc5a9481532"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
-        description = "Microsoft Azure Billing Client Library for Python";
+        description = "Microsoft Azure Billing Management Client Library for Python";
       };
     };
 
     "azure-mgmt-cdn" = python.mkDerivation {
-      name = "azure-mgmt-cdn-3.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/3f/2a/2c5450add0e93067270b24a39444c1bfb1a18ee705c5735cf38f5900f270/azure-mgmt-cdn-3.0.0.zip"; sha256 = "069774eb4b59b76ff9bd01708be0c8f9254ed40237b48368c3bb173f298755dd"; };
+      name = "azure-mgmt-cdn-2.0.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/18/eb/49b957614df3829866687ab7f8a0eec7ed8dda02092fcef8444271f7a750/azure-mgmt-cdn-2.0.0.zip"; sha256 = "57e5a78443e65c4ed7bfb9152efd593b87bcc66f0404eb822a63b059a099963b"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -573,14 +575,15 @@ let
     };
 
     "azure-mgmt-cognitiveservices" = python.mkDerivation {
-      name = "azure-mgmt-cognitiveservices-3.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/e0/34/def32a5bc74b565bc55ccfc9fd3a5ee3a8ccd36e6a98d6578167d7bbc65d/azure-mgmt-cognitiveservices-3.0.0.zip"; sha256 = "c3247f2786b996a5f328ebdaf65d31507571979e004de7a5ed0ff280f95d80b4"; };
+      name = "azure-mgmt-cognitiveservices-2.0.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/94/1c/1407ddec10a46506193acb35a572284517930efebe836db3fe3b81d01e17/azure-mgmt-cognitiveservices-2.0.0.zip"; sha256 = "bd4e1dcfbaa7b6dce5c236196f2cff0f3a92d7246e60eba888b03137f4fafa87"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -599,6 +602,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -609,15 +613,15 @@ let
     };
 
     "azure-mgmt-compute" = python.mkDerivation {
-      name = "azure-mgmt-compute-4.0.1";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/8c/19/059f8822886335c089b449b63285a3a5f7574b4a9e88ff58c9a6b4355272/azure-mgmt-compute-4.0.1.zip"; sha256 = "0f20565914e2afa1cc4b9ceacb1636ae9428c26e4547bcc6f322cfce837dc872"; };
+      name = "azure-mgmt-compute-3.0.1";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/33/34/27b48ea344325e06e71a752ac418ae0baf73e912a160393b85c39376bbb6/azure-mgmt-compute-3.0.1.zip"; sha256 = "7a28dbef42c4cfe70d9b3a9e9371668f0f448d343136ce98095b503a3085d854"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
-      self."msrest"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -636,6 +640,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -646,14 +651,15 @@ let
     };
 
     "azure-mgmt-containerinstance" = python.mkDerivation {
-      name = "azure-mgmt-containerinstance-1.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/37/db/356a1d44dd6a5fc019780dfc098e17c4680601876349a4f4103b893d778e/azure-mgmt-containerinstance-1.0.0.zip"; sha256 = "68c8150b5431752484b4933a6a15856b503068314b9d87ff99b03df3549bc92f"; };
+      name = "azure-mgmt-containerinstance-0.3.1";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/26/51/37aac0d7025adc49271081e5b7acad9c2f047c60622430b083a18b2e799d/azure-mgmt-containerinstance-0.3.1.zip"; sha256 = "3dad1d75a1d210eb001d67e7edc9dbee6f0a965ca928c6632e64243a1e6dfeb5"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -664,15 +670,15 @@ let
     };
 
     "azure-mgmt-containerregistry" = python.mkDerivation {
-      name = "azure-mgmt-containerregistry-2.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/d9/7c/44822668ea94b748884fbcb4359673a9abbe1ff37bc7ae763ae99d351c3e/azure-mgmt-containerregistry-2.1.0.zip"; sha256 = "4624bdaae57b5e107264f286931d0d81f942d0c57b0d93e8a2432abf9b074d7d"; };
+      name = "azure-mgmt-containerregistry-1.0.1";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/10/78/8a8b88b5cd662e0ac797996fad1a4ad09e3cad615fc9239d9a8fd46323b2/azure-mgmt-containerregistry-1.0.1.zip"; sha256 = "12589d5aeba82fdd4bd58cc7676560b31b73c818f59358ce6f598c28b905843a"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
-      self."msrest"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -683,33 +689,34 @@ let
     };
 
     "azure-mgmt-containerservice" = python.mkDerivation {
-      name = "azure-mgmt-containerservice-4.2.2";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/e4/1c/88e48e8fe7a5d13cfafc7716052d392b08dcc69d08c4302bc48c12b5c3e7/azure-mgmt-containerservice-4.2.2.zip"; sha256 = "99df430a03aada02625e35ef13d7de6c667e9bef56b5e2f60b2c284514223bff"; };
+      name = "azure-mgmt-containerservice-3.0.1";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/1b/7e/0aad556bbe57fb8b57f0c2ad6a6936f209ef5aeb73029d21cb4db05a2dbb/azure-mgmt-containerservice-3.0.1.zip"; sha256 = "cabf729e503a47c76d31033928c9769ba5a6f1dbf73afa42436adb7226ce4e76"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
-      self."msrest"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
-        description = "Microsoft Azure Container Service Management Client Library for Python";
+        description = "Microsoft Azure Container Service Client Library for Python";
       };
     };
 
     "azure-mgmt-cosmosdb" = python.mkDerivation {
-      name = "azure-mgmt-cosmosdb-0.4.1";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/fb/6e/5c6e26bfd2711250b88d288a14091ead249fd53621c0feeda4aa06388d52/azure-mgmt-cosmosdb-0.4.1.zip"; sha256 = "a6e70527994d8ce7f4eeca80c7691bc9555adf90819848a9a30284a33b0cffe2"; };
+      name = "azure-mgmt-cosmosdb-0.3.1";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/56/e7/cea449bb3d438dbc98a01e8b10ae236a0e70211b288f5893933e16b7de94/azure-mgmt-cosmosdb-0.3.1.zip"; sha256 = "65911bd31d40197a5b5631b5327034bff7cc6bc3f9b1001be0e6abf11f535182"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -720,14 +727,15 @@ let
     };
 
     "azure-mgmt-datafactory" = python.mkDerivation {
-      name = "azure-mgmt-datafactory-0.6.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/f5/48/38a547a2bc716163d9261d48c4dab4e421153b16cb7e7a53dee22d770558/azure-mgmt-datafactory-0.6.0.zip"; sha256 = "6ee02286e9950b9f5b76589459f6d060a962faaab1f49c263a55d011e98b30bf"; };
+      name = "azure-mgmt-datafactory-0.4.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/af/52/5fe6c9bd311df1031a2f11c46e23a10068aadfe0b99f0383910a3e011d99/azure-mgmt-datafactory-0.4.0.zip"; sha256 = "bd991036df940bf56381fc0d46ddb10fbb0ded248405bd0ba612971cdcff94ae"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -738,14 +746,15 @@ let
     };
 
     "azure-mgmt-datalake-analytics" = python.mkDerivation {
-      name = "azure-mgmt-datalake-analytics-0.6.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/6f/e9/91da6cea4cccb268237e7f16bddefb2dbb1507f75b78c13a79eae16eb1cc/azure-mgmt-datalake-analytics-0.6.0.zip"; sha256 = "0d64c4689a67d6138eb9ffbaff2eda2bace7d30b846401673183dcb42714de8f"; };
+      name = "azure-mgmt-datalake-analytics-0.3.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/a0/8c/f8696a4d34f8f14b0594c2245e966a3bfaf12c002e38b27048f53286fc47/azure-mgmt-datalake-analytics-0.3.0.zip"; sha256 = "7b5ed7a7ceaf6de8ce594b1b6474754a07cfcbfb06d613c09b1e539d4f62483a"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-datalake-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -755,57 +764,39 @@ let
       };
     };
 
+    "azure-mgmt-datalake-nspkg" = python.mkDerivation {
+      name = "azure-mgmt-datalake-nspkg-2.0.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/f7/eb/3b330ffd3a925db473175c3a28244bdf87c4736ce16a55be7a7535c6bfa5/azure-mgmt-datalake-nspkg-2.0.0.zip"; sha256 = "28b8774a1aba3e11c431f9c6cc984fde31a0ecbb89270924f392504f4260ca37"; };
+      doCheck = commonDoCheck;
+      checkPhase = "";
+      installCheckPhase = "";
+      buildInputs = commonBuildInputs;
+      propagatedBuildInputs = [
+      self."azure-mgmt-nspkg"
+    ];
+      meta = with pkgs.stdenv.lib; {
+        homepage = "https://github.com/Azure/azure-sdk-for-python";
+        license = licenses.mit;
+        description = "Microsoft Azure Data Lake Management Namespace Package [Internal]";
+      };
+    };
+
     "azure-mgmt-datalake-store" = python.mkDerivation {
-      name = "azure-mgmt-datalake-store-0.5.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/00/13/037f0128bdfcd47253f69a3b4ca6a7ff7b673b35832bc48f7c74df24a9be/azure-mgmt-datalake-store-0.5.0.zip"; sha256 = "9376d35495661d19f8acc5604f67b0bc59493b1835bbc480f9a1952f90017a4c"; };
+      name = "azure-mgmt-datalake-store-0.3.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/2d/48/d9477303445e24616b87d49592dfe8792cf5d1dc383440b3f96e84765191/azure-mgmt-datalake-store-0.3.0.zip"; sha256 = "d3bdd3071632574d52a423be86a4e24bb1302b1415061d16d8d0ea83edf97d17"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-datalake-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
-        description = "Microsoft Azure Data Lake Store Management Client Library for Python";
-      };
-    };
-
-    "azure-mgmt-datamigration" = python.mkDerivation {
-      name = "azure-mgmt-datamigration-1.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/97/7c/4290bd4822883593bda7b09558747acc8700f1cc572fcb9b59cde3b3eba6/azure-mgmt-datamigration-1.0.0.zip"; sha256 = "ea2920475f9e56e660003a06397228243042157d46674f8a09abaf2d0a933aed"; };
-      doCheck = commonDoCheck;
-      checkPhase = "";
-      installCheckPhase = "";
-      buildInputs = commonBuildInputs;
-      propagatedBuildInputs = [
-      self."azure-common"
-      self."msrestazure"
-    ];
-      meta = with pkgs.stdenv.lib; {
-        homepage = "https://github.com/Azure/azure-sdk-for-python";
-        license = licenses.mit;
-        description = "Microsoft Azure Data Migration Client Library for Python";
-      };
-    };
-
-    "azure-mgmt-devspaces" = python.mkDerivation {
-      name = "azure-mgmt-devspaces-0.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/41/99/9572cbadd62752284c40e6868a25c2694b7494041bfcaa9a817fd0029163/azure-mgmt-devspaces-0.1.0.zip"; sha256 = "4710dd59fc219ebfa4272dbbad58bf62093b52ce22bfd32a5c0279d2149471b5"; };
-      doCheck = commonDoCheck;
-      checkPhase = "";
-      installCheckPhase = "";
-      buildInputs = commonBuildInputs;
-      propagatedBuildInputs = [
-      self."azure-common"
-      self."msrestazure"
-    ];
-      meta = with pkgs.stdenv.lib; {
-        homepage = "https://github.com/Azure/azure-sdk-for-python";
-        license = licenses.mit;
-        description = "Microsoft Azure Dev Spaces Client Library for Python";
+        description = "Microsoft Azure Data Lake Store Management Client Client Library for Python";
       };
     };
 
@@ -818,6 +809,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -828,15 +820,15 @@ let
     };
 
     "azure-mgmt-dns" = python.mkDerivation {
-      name = "azure-mgmt-dns-2.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/dd/61/bc8dbb9b7addc33c8ba03b1cbf2399da20e7a9b6b9bd81d02c7172d30388/azure-mgmt-dns-2.0.0.zip"; sha256 = "fc9cfd44ab534f156fa850a61b37d24204b86731a7f5d363f06c1ae10690aebe"; };
+      name = "azure-mgmt-dns-1.2.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/41/43/ec4c6205a1b756e9feafe61346527c217171982fb5e6317f47fb0696600d/azure-mgmt-dns-1.2.0.zip"; sha256 = "676cdcd2b83bd4b24782047ec4395657103ea89dacdcf824cf9ed8eb5584d1bf"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
-      self."msrest"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -847,14 +839,15 @@ let
     };
 
     "azure-mgmt-eventgrid" = python.mkDerivation {
-      name = "azure-mgmt-eventgrid-1.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/52/bf/0aa0194083213a16b1691368ad19260f1472dadc417334356d43f2e9829d/azure-mgmt-eventgrid-1.0.0.zip"; sha256 = "824503b668137affa5b3782c6348c0bb6ab012c72fe47a3be9942c5639f82f8a"; };
+      name = "azure-mgmt-eventgrid-0.4.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/a8/b5/a3e49faa5bd5618294d411bbd11ed1ae9eb886c65b78cdcb9bea360a53e4/azure-mgmt-eventgrid-0.4.0.zip"; sha256 = "cf22195fe453627e20d81695a14e3c7b9329790763b65243be55d66964c789ac"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -865,15 +858,15 @@ let
     };
 
     "azure-mgmt-eventhub" = python.mkDerivation {
-      name = "azure-mgmt-eventhub-2.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/a5/f4/aa3ae0be1bd05127afd178bb363034dbf68f7e46af45c61cd364de4a3698/azure-mgmt-eventhub-2.1.0.zip"; sha256 = "6a3a0cc288c5fb40cff2b88f9abdf783b4dbac287ba1ddb05b3b7e668b89426b"; };
+      name = "azure-mgmt-eventhub-1.2.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/7f/07/94a08651d8afa5f9174a80b3198d1fc3e0f2baf522bcf9fc4596cbfdd1e4/azure-mgmt-eventhub-1.2.0.zip"; sha256 = "30a316ccd7a91fbf397a3df2648ae7dfa218566177f85ed65450a13698f77215"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
-      self."msrest"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -892,6 +885,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -901,33 +895,16 @@ let
       };
     };
 
-    "azure-mgmt-iotcentral" = python.mkDerivation {
-      name = "azure-mgmt-iotcentral-0.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/92/90/18f54035d66a906ec390b09803fd1922fda3bd03126a0b01eefd9e69e612/azure-mgmt-iotcentral-0.1.0.zip"; sha256 = "0d2101f3ea8a21ec3b29ee72d83e6ca606a241efec3b042cda8c656ad99b8fd2"; };
-      doCheck = commonDoCheck;
-      checkPhase = "";
-      installCheckPhase = "";
-      buildInputs = commonBuildInputs;
-      propagatedBuildInputs = [
-      self."azure-common"
-      self."msrestazure"
-    ];
-      meta = with pkgs.stdenv.lib; {
-        homepage = "https://github.com/Azure/azure-sdk-for-python";
-        license = licenses.mit;
-        description = "Microsoft Azure IoTCentral Management Client Library for Python";
-      };
-    };
-
     "azure-mgmt-iothub" = python.mkDerivation {
-      name = "azure-mgmt-iothub-0.5.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/34/7b/9a8aa8bebf77b18b208a65ceedb915167b314746572d6e4ea2913eb3526c/azure-mgmt-iothub-0.5.0.zip"; sha256 = "08388142ed6844f0a0e97d2740decf80ffc94f22adca174c15f60b9e2c2d14be"; };
+      name = "azure-mgmt-iothub-0.4.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/33/46/1283ee4c6dda32bd92018adcbdf521595a6ca80fa7e203064a2eb284d56d/azure-mgmt-iothub-0.4.0.zip"; sha256 = "65ff5bf8cc6096ab468ba444d64b501366218af15f937f0ce14173fadbc1653d"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -938,14 +915,15 @@ let
     };
 
     "azure-mgmt-iothubprovisioningservices" = python.mkDerivation {
-      name = "azure-mgmt-iothubprovisioningservices-0.2.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/7a/9e/179a404d2b3d999cf2dbdbec51c849e92625706e8eff6bd6d02df3ad2ab7/azure-mgmt-iothubprovisioningservices-0.2.0.zip"; sha256 = "8c37acfd1c33aba845f2e0302ef7266cad31cba503cc990a48684659acb7b91d"; };
+      name = "azure-mgmt-iothubprovisioningservices-0.1.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/9c/a8/1ddbe8bda18673a76ad35862651242ab2dfb0dadaf770135dad8dba50f56/azure-mgmt-iothubprovisioningservices-0.1.0.zip"; sha256 = "afc226a76477e9f881979cd5376533a0fdc276b3e9540c3620ada65ef0187bd2"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -956,33 +934,34 @@ let
     };
 
     "azure-mgmt-keyvault" = python.mkDerivation {
-      name = "azure-mgmt-keyvault-1.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/ee/51/49aa83bc983020d69807ce5458d70009bff211e9f6e4f6bb081755e82af8/azure-mgmt-keyvault-1.1.0.zip"; sha256 = "05a15327a922441d2ba32add50a35c7f1b9225727cbdd3eeb98bc656e4684099"; };
+      name = "azure-mgmt-keyvault-0.40.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/e0/c2/6c572800601330c343f993b93432f06ff2abdc35ee40ef42f81ee3a00ec2/azure-mgmt-keyvault-0.40.0.zip"; sha256 = "fb7facbcdc9157f7fb83abb41032f257a6013a02205d7c0327b56779ca20fd30"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
-      self."msrest"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
-        description = "Microsoft Azure Key Vault Management Client Library for Python";
+        description = "Microsoft Azure KeyVault Apps Resource Management Client Library for Python";
       };
     };
 
     "azure-mgmt-loganalytics" = python.mkDerivation {
-      name = "azure-mgmt-loganalytics-0.2.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/93/e2/6b47cc232357b05d0c8c788d6bbece67428ea997ba29d50e5cd90c1bd104/azure-mgmt-loganalytics-0.2.0.zip"; sha256 = "c7315ff0ee4d618fb38dca68548ef4023a7a20ce00efe27eb2105a5426237d86"; };
+      name = "azure-mgmt-loganalytics-0.1.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/80/24/d3d4da97b013d837a367feae1b06f007866c6333f5ab1e6e46de623efb3f/azure-mgmt-loganalytics-0.1.0.zip"; sha256 = "0b4e92becb60f3c4d8cb4243ba8f8e285f5593c6c0d05781420f62968f2f9660"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -993,20 +972,21 @@ let
     };
 
     "azure-mgmt-logic" = python.mkDerivation {
-      name = "azure-mgmt-logic-3.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/20/1d/857b2356bfd4990cbabfb4995833df4c0328ccf8abf593dc2df0278ffeea/azure-mgmt-logic-3.0.0.zip"; sha256 = "d163dfc32e3cfa84f3f8131a75d9e94f5c4595907332cc001e45bf7e4efd5add"; };
+      name = "azure-mgmt-logic-2.1.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/56/3d/73c27708d003d37f3ad4c5d93978aa14ff00665a5da44eb80100a547863e/azure-mgmt-logic-2.1.0.zip"; sha256 = "a64ced3e50a566f60c8e0fc7c697a3db58a88e62583b2dec0d79f570b8efcdea"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
-        description = "Microsoft Azure Logic Apps Management Client Library for Python";
+        description = "Microsoft Azure Logic Apps Resource Management Client Library for Python";
       };
     };
 
@@ -1019,30 +999,13 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
         description = "Microsoft Azure Machine Learning Compute Management Client Library for Python";
-      };
-    };
-
-    "azure-mgmt-managementgroups" = python.mkDerivation {
-      name = "azure-mgmt-managementgroups-0.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/3e/fd/0601266fd246b84a8f6882822b6cbccee18b85d5405dab1b85db82ba2606/azure-mgmt-managementgroups-0.1.0.zip"; sha256 = "ff62d982edda634a36160cb1d15a367a9572a5acb419e5e7ad371e8c83bd47c7"; };
-      doCheck = commonDoCheck;
-      checkPhase = "";
-      installCheckPhase = "";
-      buildInputs = commonBuildInputs;
-      propagatedBuildInputs = [
-      self."azure-common"
-      self."msrestazure"
-    ];
-      meta = with pkgs.stdenv.lib; {
-        homepage = "https://github.com/Azure/azure-sdk-for-python";
-        license = licenses.mit;
-        description = "Microsoft Azure Management Groups Client Library for Python";
       };
     };
 
@@ -1055,30 +1018,13 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
         description = "Microsoft Azure ManagementPartner Management Client Library for Python";
-      };
-    };
-
-    "azure-mgmt-maps" = python.mkDerivation {
-      name = "azure-mgmt-maps-0.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/58/99/735fc6f274d2f2a493071b4bc3e6ec2bc3d0d6caf1425eb903647785532c/azure-mgmt-maps-0.1.0.zip"; sha256 = "c120e210bb61768da29de24d28b82f8d42ae24e52396eb6569b499709e22f006"; };
-      doCheck = commonDoCheck;
-      checkPhase = "";
-      installCheckPhase = "";
-      buildInputs = commonBuildInputs;
-      propagatedBuildInputs = [
-      self."azure-common"
-      self."msrestazure"
-    ];
-      meta = with pkgs.stdenv.lib; {
-        homepage = "https://github.com/Azure/azure-sdk-for-python";
-        license = licenses.mit;
-        description = "Microsoft Azure Maps Client Library for Python";
       };
     };
 
@@ -1091,6 +1037,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1101,50 +1048,53 @@ let
     };
 
     "azure-mgmt-media" = python.mkDerivation {
-      name = "azure-mgmt-media-1.0.0rc2";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/90/67/7617a2f9402061150dc857139d79bf3a2f71fb75abdbebeda67d45cbff8c/azure-mgmt-media-1.0.0rc2.zip"; sha256 = "7be7aec9d2726fec63c1bf276cc127a3696002dca7b8edd53a1aca28a143dbab"; };
+      name = "azure-mgmt-media-0.2.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/0c/96/4f6ae0f92895aaba8868ea9dbc44e088c2babd01ac4a3de090247365a63d/azure-mgmt-media-0.2.0.zip"; sha256 = "656181ee580ff9a6e15cdd5db16e9adfc98b6f39c5108181c36a7ec825fccb87"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
-        description = "Microsoft Azure Media Services Client Library for Python";
+        description = "Microsoft Azure Media Services Management Client Library for Python";
       };
     };
 
     "azure-mgmt-monitor" = python.mkDerivation {
-      name = "azure-mgmt-monitor-0.5.2";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/c6/e7/7a05e95d742605c08b38864693e82d0424bb66dd5870b5e2edfc0f71fd0c/azure-mgmt-monitor-0.5.2.zip"; sha256 = "f1a58d483e3292ba4f7bbf3104573130c9265d6c9262e26b60cbfa950b5601e4"; };
+      name = "azure-mgmt-monitor-0.4.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/b2/5a/ac8f8ce8b537d7c4ba6f21729a24c71da464f84d62f1e3d3daa533fb5963/azure-mgmt-monitor-0.4.0.zip"; sha256 = "1c9457c38cfe6704de3ab7320a145bb3a25cd41f55242d53e5519bf3e676eb44"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
-        description = "Microsoft Azure Monitor Client Library for Python";
+        description = "Microsoft Azure Monitor Management Client Library for Python";
       };
     };
 
     "azure-mgmt-msi" = python.mkDerivation {
-      name = "azure-mgmt-msi-0.2.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/da/6f/60f92469f93e2820949f967b8c722fe0c04f03e4cc9a6332ffaf5e9f405b/azure-mgmt-msi-0.2.0.zip"; sha256 = "8622bc9a164169a0113728ebe7fd43a88189708ce6e10d4507247d6907987167"; };
+      name = "azure-mgmt-msi-0.1.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/2b/75/d48876229987f592358b3d4475877797fda939d9d04bbbbc13edf141fa52/azure-mgmt-msi-0.1.0.zip"; sha256 = "53eed7bc8453b764b4d568320eed032328da5b606185c216f3e93c75fa328858"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1155,15 +1105,15 @@ let
     };
 
     "azure-mgmt-network" = python.mkDerivation {
-      name = "azure-mgmt-network-2.0.1";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/23/af/df2d8fc56d1fc043b3f50fc0a3e45903ca4254330349f01bf1893ddffa93/azure-mgmt-network-2.0.1.zip"; sha256 = "8d75dc6eac82f0593106903d0fd616115b4472772f867535dd5d21f2e5e21cdf"; };
+      name = "azure-mgmt-network-1.7.1";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/2d/f6/1ae5eb3414dc259bb8a67ce72354dc8a5095ca02dc6376672c4ee27bce5b/azure-mgmt-network-1.7.1.zip"; sha256 = "ddfff3dd31c7329b26f282615b719e7030c5206e56951daae4f180957c1e5201"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
-      self."msrest"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1174,14 +1124,15 @@ let
     };
 
     "azure-mgmt-notificationhubs" = python.mkDerivation {
-      name = "azure-mgmt-notificationhubs-2.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/b1/d6/c5fdeed29289e6d4ea8a5857811842b15ff686117fa0a20c98f3e2bb4476/azure-mgmt-notificationhubs-2.0.0.zip"; sha256 = "7c4c7755c28c8301cfa90d6ded9509c30444e5dfc5001b132dca57836930602b"; };
+      name = "azure-mgmt-notificationhubs-1.0.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/82/97/407bfba09fdbff5b9a73831ac567bb1a9b0563c88c5b08c65cbd4d4ac989/azure-mgmt-notificationhubs-1.0.0.zip"; sha256 = "fa5889ace3a900ade01ad904d04b3778c0488bb67fa9b87c7ea389e83e5d5cd4"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1191,33 +1142,33 @@ let
       };
     };
 
-    "azure-mgmt-policyinsights" = python.mkDerivation {
-      name = "azure-mgmt-policyinsights-0.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/72/f8/ead482ae756cc04b61f96ffa29d4a6dca736dddc5407697cdc98cde17015/azure-mgmt-policyinsights-0.1.0.zip"; sha256 = "ff94cb12d6e01bf1470c2a6af4ce6960669ab4209106153879ff97addc569ce1"; };
+    "azure-mgmt-nspkg" = python.mkDerivation {
+      name = "azure-mgmt-nspkg-2.0.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/fe/66/66eb0d5ead69b7371649466fa160a166de0d1ddafc4a1d7a172858a8abc9/azure-mgmt-nspkg-2.0.0.zip"; sha256 = "e36488d4f5d7d668ef5cc3e6e86f081448fd60c9bf4e051d06ff7cfc5a653e6f"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
-      self."azure-common"
-      self."msrestazure"
+      self."azure-nspkg"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
-        description = "Microsoft Azure Policy Insights Client Library for Python";
+        description = "Microsoft Azure Resource Management Namespace Package [Internal]";
       };
     };
 
     "azure-mgmt-powerbiembedded" = python.mkDerivation {
-      name = "azure-mgmt-powerbiembedded-2.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/5f/2f/7d3c7b97d5d469a0c68c2881c69b62b5c88184fb439daa41b061dd4ced25/azure-mgmt-powerbiembedded-2.0.0.zip"; sha256 = "2f05be73f2a086c579a78fc900e3b2ae14ccde5bcec54e29dfc73e626b377476"; };
+      name = "azure-mgmt-powerbiembedded-1.0.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/17/5d/db62d4c811d4a2ca9daccefedda6c541bd35fa2a709389bc7a74832b19f2/azure-mgmt-powerbiembedded-1.0.0.zip"; sha256 = "bb04025c6c9ae314cb4279c0dcb1def43ee1057ad19caf012b0d3bcf5117e1f6"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1228,14 +1179,15 @@ let
     };
 
     "azure-mgmt-rdbms" = python.mkDerivation {
-      name = "azure-mgmt-rdbms-1.2.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/de/61/80e7b2510efee13334095e509f8daf42187b811f7eb7fab830be9f453d19/azure-mgmt-rdbms-1.2.0.zip"; sha256 = "6e5abef2fcac1149dda1119443ea26c847e55e8b4c771b7b033f92d1b3140263"; };
+      name = "azure-mgmt-rdbms-0.1.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/4f/bb/fd668496474ca4a43361a83e1db7de41d4f4ff632f74bd446ede9d9f7a2a/azure-mgmt-rdbms-0.1.0.zip"; sha256 = "c06419399f04e2757f447731a09d232090a855369c9f975fc90ed9a8bddd0b01"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1246,14 +1198,15 @@ let
     };
 
     "azure-mgmt-recoveryservices" = python.mkDerivation {
-      name = "azure-mgmt-recoveryservices-0.3.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/0e/be/fb8fe04ac181a63b563d172dbe658eba1b75fa5a0df8e3659dac04e0f608/azure-mgmt-recoveryservices-0.3.0.zip"; sha256 = "e48f7769fb10a85ad857710c2cba47880166f69fe7da6b331771f129b21de95c"; };
+      name = "azure-mgmt-recoveryservices-0.2.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/30/5d/339b935d921e951f38c0842bb2386049d08f355019faf7b5ca06b28aeaaf/azure-mgmt-recoveryservices-0.2.0.zip"; sha256 = "4acba8a6279dc85f8d9951cffb1205e88f956dab53a703854a08b2af5404936a"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1264,20 +1217,21 @@ let
     };
 
     "azure-mgmt-recoveryservicesbackup" = python.mkDerivation {
-      name = "azure-mgmt-recoveryservicesbackup-0.3.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/5c/18/a60608752a23d585f6fe13fb3bd9a9a11ceac69129c72a3cf0dc32524028/azure-mgmt-recoveryservicesbackup-0.3.0.zip"; sha256 = "1e55b6cbb808df83576cef352ba0065f4878fe505299c0a4c5a97f4f1e5793df"; };
+      name = "azure-mgmt-recoveryservicesbackup-0.1.1";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/9f/fb/731b07c573c660780e660d883cb1d1a6d09c1b4ebd5348383eae854a4024/azure-mgmt-recoveryservicesbackup-0.1.1.zip"; sha256 = "a09a514f5c7877406bdf777007683f036f5444f878cf595a15e541e7ba5c1c66"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
-        description = "Microsoft Azure Recovery Services Backup Management Client Library for Python";
+        description = "Microsoft Azure Recovery Services Backup Client Library for Python";
       };
     };
 
@@ -1290,6 +1244,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1308,6 +1263,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1318,32 +1274,34 @@ let
     };
 
     "azure-mgmt-reservations" = python.mkDerivation {
-      name = "azure-mgmt-reservations-0.2.1";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/27/04/fd610a6e3095ec09f6c0e3d9b3ba356c7fac329b260b82014a7cb7b0eb2b/azure-mgmt-reservations-0.2.1.zip"; sha256 = "40618a3700c47a788182649f238d985edf15b08b6577ea27557e70e2866ac171"; };
+      name = "azure-mgmt-reservations-0.1.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/76/32/5d7c2d8e4f71679301562cef1ae4e18536d601741c5b4789a275659ed101/azure-mgmt-reservations-0.1.0.zip"; sha256 = "73645c247b9fb2cc39d4cdab85405e55df2e8eab5a478514be0825e253660b9d"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
-        description = "Microsoft Azure Reservations Client Library for Python";
+        description = "Microsoft Azure Reservations Management Client Library for Python";
       };
     };
 
     "azure-mgmt-resource" = python.mkDerivation {
-      name = "azure-mgmt-resource-2.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/48/31/5996d2af3e32cf6ccc3f44da401ae397e6302b08d7ef7d8736191a8bfe61/azure-mgmt-resource-2.0.0.zip"; sha256 = "2e83289369be88d0f06792118db5a7d4ed7150f956aaae64c528808da5518d7f"; };
+      name = "azure-mgmt-resource-1.2.2";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/27/f0/ab10f7851e9437da02b981d79545cd7290380d396d822bf71f99d457637b/azure-mgmt-resource-1.2.2.zip"; sha256 = "fe65dc43c8643a8c3e731783e98334258bf5dc57cf4ae063401e2b05b9d71d71"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1354,14 +1312,15 @@ let
     };
 
     "azure-mgmt-scheduler" = python.mkDerivation {
-      name = "azure-mgmt-scheduler-2.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/a8/e0/a045f6a62c2fca6a84fabc812b961511565eec31103f9c688ce887dc6d17/azure-mgmt-scheduler-2.0.0.zip"; sha256 = "c6e6edd386ddc4c21d54b1497c3397b970bc127b71809b51bd2391cb1f3d1a14"; };
+      name = "azure-mgmt-scheduler-1.1.3";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/e3/23/b6ac7cbad15b877b371d7b019c4845b8269d96f0c35f22c0afd806bc526b/azure-mgmt-scheduler-1.1.3.zip"; sha256 = "ffd0aa675a7bfc53ce57cf335fcbccf7055b8927413c6b19af3d57d0ac2ce250"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1372,14 +1331,15 @@ let
     };
 
     "azure-mgmt-search" = python.mkDerivation {
-      name = "azure-mgmt-search-2.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/d3/ac/45dc77a33fa08f09f27a28a42321780d41830f22b554951836bca8665a5e/azure-mgmt-search-2.0.0.zip"; sha256 = "0ec5de861bd786bcb8691322feed6e6caa8d2f0806a50dc0ca5d640591926893"; };
+      name = "azure-mgmt-search-1.0.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/58/94/e2bc41576b730a578848b17b8a337efdf579c7593393a7d2fe54e5700431/azure-mgmt-search-1.0.0.zip"; sha256 = "20399e114dced423563a32fe9b8af5d8ea2cd1e1d08d6df603fbd5ce2e4dbf28"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1389,15 +1349,35 @@ let
       };
     };
 
-    "azure-mgmt-servicebus" = python.mkDerivation {
-      name = "azure-mgmt-servicebus-0.5.1";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/bf/73/ab9df5d9e771a54457d8e20bff1b2ef3be4f6817f5df9efa37a785ec016e/azure-mgmt-servicebus-0.5.1.zip"; sha256 = "7977e9118206c7740e00b5e37c697b195125cbaedca19a54ed4bdb79ec4b988d"; };
+    "azure-mgmt-servermanager" = python.mkDerivation {
+      name = "azure-mgmt-servermanager-1.2.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/97/6e/f18aefa55165fb7035953fc1e006b14749a4cf7c2ffbc34b259fad01c377/azure-mgmt-servermanager-1.2.0.zip"; sha256 = "0ac10b4481b66325db63a17397a7f1e8a8a9299a006cf89ac746338e943015f4"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
+      self."msrestazure"
+    ];
+      meta = with pkgs.stdenv.lib; {
+        homepage = "https://github.com/Azure/azure-sdk-for-python";
+        license = licenses.mit;
+        description = "Microsoft Azure Server Manager Management Client Library for Python";
+      };
+    };
+
+    "azure-mgmt-servicebus" = python.mkDerivation {
+      name = "azure-mgmt-servicebus-0.4.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/bc/30/46b609e02a79c1a464e83a0e3b1c6e1184df69ca374d8c9322bff28703e1/azure-mgmt-servicebus-0.4.0.zip"; sha256 = "d678ec3220270dede73863db22506307638d51001c1fd97de07b0ca77210371a"; };
+      doCheck = commonDoCheck;
+      checkPhase = "";
+      installCheckPhase = "";
+      buildInputs = commonBuildInputs;
+      propagatedBuildInputs = [
+      self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1408,15 +1388,15 @@ let
     };
 
     "azure-mgmt-servicefabric" = python.mkDerivation {
-      name = "azure-mgmt-servicefabric-0.2.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/13/cd/996d5887c207c175eb1be0936b994db3382d0e2998e58baaf5255e53ddc2/azure-mgmt-servicefabric-0.2.0.zip"; sha256 = "b2bf2279b8ff8450c35e78e226231655021482fdbda27db09975ebfc983398ad"; };
+      name = "azure-mgmt-servicefabric-0.1.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/e6/79/597d3e5fe6ee4ac44a42918e83a99734d25f38f0f3ef48b854bbac0a34a3/azure-mgmt-servicefabric-0.1.0.zip"; sha256 = "9f7789bdc221fcf81608cc5a3e64f1d59d41c453ff1567cb81197b19a2cd6373"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
-      self."msrest"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1426,33 +1406,16 @@ let
       };
     };
 
-    "azure-mgmt-signalr" = python.mkDerivation {
-      name = "azure-mgmt-signalr-0.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/d2/4d/8093ed05713cf31b427353de9bc9de61283c55400f26f061fb430d647fc4/azure-mgmt-signalr-0.1.0.zip"; sha256 = "c7db8bbfb7423305433ca4764ea66c4ff98ea92e7cba2da5bf367fb6d44532a5"; };
-      doCheck = commonDoCheck;
-      checkPhase = "";
-      installCheckPhase = "";
-      buildInputs = commonBuildInputs;
-      propagatedBuildInputs = [
-      self."azure-common"
-      self."msrestazure"
-    ];
-      meta = with pkgs.stdenv.lib; {
-        homepage = "https://github.com/Azure/azure-sdk-for-python";
-        license = licenses.mit;
-        description = "Microsoft Azure SignalR Client Library for Python";
-      };
-    };
-
     "azure-mgmt-sql" = python.mkDerivation {
-      name = "azure-mgmt-sql-0.9.1";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/9e/68/d7df2ec227c9082454981f4043f4994e0f1b8aa92beca0cf21c25cf1cfbe/azure-mgmt-sql-0.9.1.zip"; sha256 = "5da488a56d5265757b45747cf5fd22413eb089e606658d6e6d84fe3e9b07e4fa"; };
+      name = "azure-mgmt-sql-0.8.6";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/e6/9f/4745f23eb5f91f236d7fbca748ffb4db86d4ac44d059ecdecdac3040f438/azure-mgmt-sql-0.8.6.zip"; sha256 = "6cdfe3d5c2d9660f85f9d19a20d9d79e2efd04d3369d2bf58aa99c34db6aefb2"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1463,14 +1426,15 @@ let
     };
 
     "azure-mgmt-storage" = python.mkDerivation {
-      name = "azure-mgmt-storage-2.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/38/8a/2ea5b07a1a8341f064f3e7f92a7ebeeacb26540959cf58381f66dd2d19a6/azure-mgmt-storage-2.0.0.zip"; sha256 = "512a29798833453f8c32a5b6d038a459649bbb5b9970ac23c982b5787057fa2b"; };
+      name = "azure-mgmt-storage-1.5.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/bb/8c/e276e122ba7881446c500e20ae8832a7eb67c71fc01d2508a15100080601/azure-mgmt-storage-1.5.0.zip"; sha256 = "b1fc3a293051dee35dffe12d618f925581d6536c94ca5c05b69461ce941125a1"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1481,14 +1445,15 @@ let
     };
 
     "azure-mgmt-subscription" = python.mkDerivation {
-      name = "azure-mgmt-subscription-0.2.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/49/23/31b74f6cfdbcd27d91e98b49bfe13a6ac26137be99a0f6f91d6e5ec87cf0/azure-mgmt-subscription-0.2.0.zip"; sha256 = "309b23f0de65f26da80c801e913b0c3b2aea8b90ba583d919f81fe6f329d3f1b"; };
+      name = "azure-mgmt-subscription-0.1.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/50/cb/981c7866d88eb2372d09f603b0e95a83b07e72370afe0b220c4a6aa469cc/azure-mgmt-subscription-0.1.0.zip"; sha256 = "f9cf41a7db8b55e4ec279027cad54635a0f78f9a6527fc8bcca4aef69ceb4e15"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1499,14 +1464,15 @@ let
     };
 
     "azure-mgmt-trafficmanager" = python.mkDerivation {
-      name = "azure-mgmt-trafficmanager-0.50.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/bb/66/ca0d8190a227ba2fcd2b712209cd39e10e28f71b4d621ef07e7c325e29ca/azure-mgmt-trafficmanager-0.50.0.zip"; sha256 = "126167eaa82b443b5b71394050ec292f45074701232bdbdda71f636e9b46516b"; };
+      name = "azure-mgmt-trafficmanager-0.40.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/68/4f/c8b62406174c8355b2c1fb62720152c0bb8046dd62bb1029fcf8c8d049d2/azure-mgmt-trafficmanager-0.40.0.zip"; sha256 = "32cd1f5fd8d902cba5dd68f5876eadf5f98f5bef8b33319b20e6b547e7c21d68"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1517,20 +1483,36 @@ let
     };
 
     "azure-mgmt-web" = python.mkDerivation {
-      name = "azure-mgmt-web-0.35.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/44/d6/08ba5653702e67d401291128fc30aa6cff05fb82299832899c2ce63ca6cd/azure-mgmt-web-0.35.0.zip"; sha256 = "8ea0794eef22a257773c13269b94855ab79d36c342ad15a98135403c9785cc0a"; };
+      name = "azure-mgmt-web-0.34.1";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/c9/27/74a4d384efd03fb9aa8f0f971806695286961b45d154a0287eed2f142bcf/azure-mgmt-web-0.34.1.zip"; sha256 = "6d44f248f36dafb3a8f5175060d1959fdfa267dbd4e808b0270b8bbfd2c695c1"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-mgmt-nspkg"
       self."msrestazure"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-sdk-for-python";
         license = licenses.mit;
         description = "Microsoft Azure Web Apps Management Client Library for Python";
+      };
+    };
+
+    "azure-nspkg" = python.mkDerivation {
+      name = "azure-nspkg-2.0.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/06/a2/77820fa07ec4657d6456b67edfa78856b4789ada42d1bb8e8485df19824e/azure-nspkg-2.0.0.zip"; sha256 = "fe19ee5d8c66ee8ef62557fc7310f59cffb7230f0a94701eef79f6e3191fdc7b"; };
+      doCheck = commonDoCheck;
+      checkPhase = "";
+      installCheckPhase = "";
+      buildInputs = commonBuildInputs;
+      propagatedBuildInputs = [ ];
+      meta = with pkgs.stdenv.lib; {
+        homepage = "https://github.com/Azure/azure-sdk-for-python";
+        license = licenses.mit;
+        description = "Microsoft Azure Namespace Package [Internal]";
       };
     };
 
@@ -1543,6 +1525,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-nspkg"
       self."requests"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1553,14 +1536,15 @@ let
     };
 
     "azure-servicefabric" = python.mkDerivation {
-      name = "azure-servicefabric-6.3.0.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/c6/3f/15df9c3321568bc89eec3f168c50710f603e32bcaba2c005fa5c794a2e5f/azure-servicefabric-6.3.0.0.zip"; sha256 = "c82575cbdf95cc897c3230ea889d4e751d8760a2223857fe6fbeeea5b802e5e2"; };
+      name = "azure-servicefabric-6.1.2.9";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/f5/f7/29735073c98291e527a065343ce6b2004393b04a468a99f94123e26ccf96/azure-servicefabric-6.1.2.9.zip"; sha256 = "22b034c9245cea556e892a9d7a998a9bab3d6d65c3673e0603f7bd9459a3c8c8"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-nspkg"
       self."msrest"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1579,6 +1563,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-nspkg"
       self."requests"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -1598,6 +1583,7 @@ let
       propagatedBuildInputs = [
       self."azure-common"
       self."azure-storage-common"
+      self."azure-storage-nspkg"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-storage-python";
@@ -1615,6 +1601,7 @@ let
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."azure-common"
+      self."azure-storage-nspkg"
       self."cryptography"
       self."python-dateutil"
       self."requests"
@@ -1636,11 +1623,29 @@ let
       propagatedBuildInputs = [
       self."azure-common"
       self."azure-storage-common"
+      self."azure-storage-nspkg"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-storage-python";
         license = licenses.mit;
         description = "Microsoft Azure Storage File Client Library for Python";
+      };
+    };
+
+    "azure-storage-nspkg" = python.mkDerivation {
+      name = "azure-storage-nspkg-3.0.0";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/bc/2c/5e3a8c535779ef6e7b2d556676e49768c17dd29066f41587080f23aea485/azure-storage-nspkg-3.0.0.tar.gz"; sha256 = "855315c038c0e695868025127e1b3057a1f984af9ccfbaeac4fbfd6c5dd3b466"; };
+      doCheck = commonDoCheck;
+      checkPhase = "";
+      installCheckPhase = "";
+      buildInputs = commonBuildInputs;
+      propagatedBuildInputs = [
+      self."azure-nspkg"
+    ];
+      meta = with pkgs.stdenv.lib; {
+        homepage = "https://github.com/Azure/azure-storage-python";
+        license = licenses.mit;
+        description = "Microsoft Azure Storage Namespace Package [Internal]";
       };
     };
 
@@ -1654,6 +1659,7 @@ let
       propagatedBuildInputs = [
       self."azure-common"
       self."azure-storage-common"
+      self."azure-storage-nspkg"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "https://github.com/Azure/azure-storage-python";
@@ -1693,8 +1699,8 @@ let
     };
 
     "certifi" = python.mkDerivation {
-      name = "certifi-2018.8.13";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/53/0d/d1d13a63563cc50a27b310f5612645bef06d29a5022a7e79ac659dd0fc50/certifi-2018.8.13.tar.gz"; sha256 = "4c1d68a1408dd090d2f3a869aa94c3947cc1d967821d1ed303208c9f41f0f2f4"; };
+      name = "certifi-2018.8.24";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/e1/0f/f8d5e939184547b3bdc6128551b831a62832713aa98c2ccdf8c47ecc7f17/certifi-2018.8.24.tar.gz"; sha256 = "376690d6f16d32f9d1fe8932551d80b23e9d393a8578c5633a2ed39a64861638"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
@@ -1780,18 +1786,30 @@ let
       };
     };
 
+    "entrypoints" = python.mkDerivation {
+      name = "entrypoints-0.2.3";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/27/e8/607697e6ab8a961fc0b141a97ea4ce72cd9c9e264adeb0669f6d194aa626/entrypoints-0.2.3.tar.gz"; sha256 = "d2d587dde06f99545fb13a383d2cd336a8ff1f359c5839ce3a64c917d10c029f"; };
+      doCheck = commonDoCheck;
+      checkPhase = "";
+      installCheckPhase = "";
+      buildInputs = commonBuildInputs;
+      propagatedBuildInputs = [ ];
+      meta = with pkgs.stdenv.lib; {
+        homepage = "https://github.com/takluyver/entrypoints";
+        license = "";
+        description = "Discover and load entry points from installed packages.";
+      };
+    };
+
     "gevent" = python.mkDerivation {
-      name = "gevent-1.3.6";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/49/13/aa4bb3640b5167fe58875d3d7e65390cdb14f9682a41a741a566bb560842/gevent-1.3.6.tar.gz"; sha256 = "7b413c391e8ad6607b7f7540d698a94349abd64e4935184c595f7cdcc69904c6"; };
+      name = "gevent-1.2.2";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/1b/92/b111f76e54d2be11375b47b213b56687214f258fd9dae703546d30b837be/gevent-1.2.2.tar.gz"; sha256 = "4791c8ae9c57d6f153354736e1ccab1e2baf6c8d9ae5a77a9ac90f41e2966b2d"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
-      self."cffi"
       self."greenlet"
-      self."idna"
-      self."requests"
     ];
       meta = with pkgs.stdenv.lib; {
         homepage = "http://www.gevent.org/";
@@ -1975,6 +1993,39 @@ let
       };
     };
 
+    "jeepney" = python.mkDerivation {
+      name = "jeepney-0.3.1";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/18/17/7dbc70bc13dc9c8ba8c9b25fbc8b75dffb6bc7e56c3d7cecd87e6b563e5f/jeepney-0.3.1.tar.gz"; sha256 = "a6f2aa72e61660248d4d524dfccb6405f17c693b69af5d60dd7f2bab807d907e"; };
+      doCheck = commonDoCheck;
+      checkPhase = "";
+      installCheckPhase = "";
+      buildInputs = commonBuildInputs;
+      propagatedBuildInputs = [ ];
+      meta = with pkgs.stdenv.lib; {
+        homepage = "https://gitlab.com/takluyver/jeepney";
+        license = "";
+        description = "Low-level, pure Python DBus protocol wrapper.";
+      };
+    };
+
+    "keyring" = python.mkDerivation {
+      name = "keyring-13.2.1";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/a0/c9/c08bf10bd057293ff385abaef38e7e548549bbe81e95333157684e75ebc6/keyring-13.2.1.tar.gz"; sha256 = "6364bb8c233f28538df4928576f4e051229e0451651073ab20b315488da16a58"; };
+      doCheck = commonDoCheck;
+      checkPhase = "";
+      installCheckPhase = "";
+      buildInputs = commonBuildInputs;
+      propagatedBuildInputs = [
+      self."SecretStorage"
+      self."entrypoints"
+    ];
+      meta = with pkgs.stdenv.lib; {
+        homepage = "https://github.com/jaraco/keyring";
+        license = licenses.psfl;
+        description = "Store and access your passwords safely.";
+      };
+    };
+
     "keystoneauth1" = python.mkDerivation {
       name = "keystoneauth1-3.10.0";
       src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/b6/90/0249c5cbe72f486fdb8c8387d5807ea97519237edb1b0f58a7b57a41fb3d/keystoneauth1-3.10.0.tar.gz"; sha256 = "a47e6d2f676ab226dfd5343edb8c76f7c1fc314fc163d305e79bf18afae445d9"; };
@@ -2052,14 +2103,15 @@ let
     };
 
     "msrestazure" = python.mkDerivation {
-      name = "msrestazure-0.5.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/a5/d1/5ca5d6b8647030e51d4b39d115976c4c4cc8d28293dfaa06c43268cf7c87/msrestazure-0.5.0.tar.gz"; sha256 = "2e756de45ddc2ea7c34b8dc267a5d18804f2eb6a432626ace465ffed6081455d"; };
+      name = "msrestazure-0.4.34";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/cd/ce/1381822930cb2e90e889e43831428982577acb9caec5244bcce1c9c542f9/msrestazure-0.4.34.tar.gz"; sha256 = "4fc94a03ecd5b094ab904d929cc5be7a6a80262eab93948260cfe9081a9e6de4"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
       buildInputs = commonBuildInputs;
       propagatedBuildInputs = [
       self."adal"
+      self."keyring"
       self."msrest"
     ];
       meta = with pkgs.stdenv.lib; {
@@ -2319,8 +2371,8 @@ let
     };
 
     "python-dateutil" = python.mkDerivation {
-      name = "python-dateutil-2.7.3";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/a0/b0/a4e3241d2dee665fea11baec21389aec6886655cd4db7647ddf96c3fad15/python-dateutil-2.7.3.tar.gz"; sha256 = "e27001de32f627c22380a688bcc43ce83504a7bc5da472209b4c70f02829f0b8"; };
+      name = "python-dateutil-2.7.1";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/ee/f5/d81ec46577350dcd96a26885d418969cd2b07c7d8c78e24e25c10bfc5c6f/python-dateutil-2.7.1.tar.gz"; sha256 = "14eb44faa298942c6385636bfd76bd5c21361632cf8ebc9c20d63fd00f6a069f"; };
       doCheck = commonDoCheck;
       checkPhase = "";
       installCheckPhase = "";
@@ -2519,28 +2571,6 @@ let
       };
     };
 
-    "wal-e" = python.mkDerivation {
-      name = "wal-e-1.1.0";
-      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/d6/73/b210a8900d4fc8ef4e5b919f96358cdddcb2b909fcd81bf673b3c7f08aa6/wal-e-1.1.0.tar.gz"; sha256 = "1b49590a325a25b28471526d739d904428d6f2f20d1761364266a646181fa916"; };
-      doCheck = commonDoCheck;
-      checkPhase = "";
-      installCheckPhase = "";
-      buildInputs = commonBuildInputs;
-      propagatedBuildInputs = [
-      self."azure"
-      self."boto"
-      self."gevent"
-      self."google-cloud-storage"
-      self."python-keystoneclient"
-      self."python-swiftclient"
-    ];
-      meta = with pkgs.stdenv.lib; {
-        homepage = "https://github.com/wal-e/wal-e";
-        license = licenses.bsdOriginal;
-        description = "Continuous Archiving for Postgres";
-      };
-    };
-
     "wrapt" = python.mkDerivation {
       name = "wrapt-1.10.11";
       src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/a0/47/66897906448185fcb77fc3c2b1bc20ed0ecca81a0f2f88eda3fc5a34fc3d/wrapt-1.10.11.tar.gz"; sha256 = "d4d560d479f2c21e1b5443bbd15fe7ec4b37fe7e53d335d3b9b0a7b1226fe3c6"; };
@@ -2556,10 +2586,10 @@ let
       };
     };
   };
-  localOverridesFile = ./wal-e_override.nix;
+  localOverridesFile = ./requirements_override.nix;
   localOverrides = import localOverridesFile { inherit pkgs python; };
   commonOverrides = [
-        (let src = pkgs.fetchFromGitHub { owner = "garbas"; repo = "nixpkgs-python"; rev = "c175a6e3fe56707e94aca7506e2d0f72f55c7ff4"; sha256 = "09nfbidi3ws597jzwcg53hbdylcril29hsmzhsz3kbsvjn0jglg1"; } ; in import "${src}/overrides.nix" { inherit pkgs python; })
+        (let src = pkgs.fetchFromGitHub { owner = "garbas"; repo = "nixpkgs-python"; rev = "5ced58ca0f00a0d0947b4d5329e99b15e70ee898"; sha256 = "0psbv3s2sgix1vlf8l86dpwiyz3qi4a3prss1b6j440ipc7c7d8z"; } ; in import "${src}/overrides.nix" { inherit pkgs python; })
   ];
   paramOverrides = [
     (overrides { inherit pkgs python; })

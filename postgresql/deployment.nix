@@ -48,8 +48,7 @@ let
         };
 
         environment.systemPackages = with pkgs; [
-          #wal-e
-          wal-g
+          wal-e
         ];
 
       };

@@ -26,5 +26,5 @@ pkgs.python36Packages.buildPythonApplication rec {
     python.packages."google-cloud-storage"
     python.packages."python-swiftclient"
     python.packages."python-keystoneclient"
-  ];
+  ]; # ++ builtins.attrValues python.packages;
 }
