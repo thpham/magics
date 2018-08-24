@@ -22,6 +22,7 @@ in {
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
+  services.openssh.permitRootLogin = "prohibit-password";
   services.openssh.passwordAuthentication = false;
 
   ## osquery-2.5.2 is marked as broken
@@ -36,7 +37,9 @@ in {
     };
   };
 
-  users.mutableUsers = false;
+  # Maybe incompatible with some provisioner (i.e. <google-compute-config>)
+  #users.mutableUsers = false;
+  
   users.motd = "Restricted Access Only";
 
   programs.tmux.enable = true;
