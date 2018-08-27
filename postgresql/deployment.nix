@@ -13,6 +13,7 @@ let
         #networking.firewall.enable = false;
         networking.firewall.allowedTCPPorts = [
           5432  # PostgreSQL
+          8080  # PgAdmin
           8888  # powa-web
           9187  # prometheus postgres_exporter
         ];
@@ -44,6 +45,8 @@ let
           };
         };
 
+        virtualisation.rkt.enable = true;
+
         systemd.services = {
           postgres_exporter = {
             description = "Prometheus PostgreSQL exporter";
@@ -65,6 +68,27 @@ let
             serviceConfig = {
               User = "powa";
               ExecStart = "${pkgs.powa-web}/bin/powa-web";
+              Restart = "always";
+            };
+          };
+          pgadmin = {
+            description = "PgAdmin Service";
+            wantedBy = [ "multi-user.target" ];
+            after = [ "network-interfaces.target" ];
+            environment = {
+              PGADMIN_DEFAULT_EMAIL="admin@domain.tld";
+              PGADMIN_DEFAULT_PASSWORD="s3cr3t";
+            };
+            serviceConfig = {
+              Slice = "machine.slice";
+              ExecStartPre="${pkgs.rkt}/bin/rkt fetch --insecure-options=image docker://dpage/pgadmin4:3.2";
+              ExecStart = ''\
+                ${pkgs.rkt}/bin/rkt run --insecure-options=image \
+                --inherit-env --port=80-tcp:8080 \
+                docker://dpage/pgadmin4:3.2 --cpu=500m --memory=512M
+              '';
+              ExecStopPost="${pkgs.rkt}/bin/rkt gc --mark-only";
+              KillMode = "mixed";
               Restart = "always";
             };
           };
