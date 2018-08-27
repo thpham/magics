@@ -7,6 +7,7 @@ with pkgs;
   inherit pkgs;
 
   bigchaindb = callPackage ./pkgs/bigchaindb { };
+  docker2aci = callPackage ./pkgs/docker2aci { };
   
   pgrouting   = callPackage ./pkgs/pgrouting  { };
   postgis_2_3 = (pkgs.postgis_2_3.override { postgresql = pkgs.postgresql96; });
