@@ -20,6 +20,36 @@ let
           prometheus = {
             enable = true;
             dataDir = "/data/prometheus";
+            extraFlags = [
+              "--storage.tsdb.retention=15d"
+            ];
+            remoteWriteConfigs = [
+              {
+                url = "http://localhost:8086/api/v1/prom/write?db=prometheus";
+              }
+            ];
+            remoteReadConfigs = [
+              {
+                url = "http://localhost:8086/api/v1/prom/read?db=prometheus";
+              }
+            ];
+            scrapeConfigs = [
+              {
+                job_name = "prometheus";
+                scrape_interval = "1m";
+                static_configs = [
+                  {
+                    targets = [
+                      "localhost:9090"
+                    ];
+                    labels = {
+                      alias = "monitor";
+                    };
+                  }
+                ];
+              }
+            ];
+            #configText = builtins.readFile machine.prometheusConfigFile;
             exporters.node = {
               enable = true;
               listenAddress = "localhost";

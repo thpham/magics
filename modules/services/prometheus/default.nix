@@ -23,6 +23,8 @@ let
       (pkgs.writeText "prometheus.rules" (concatStringsSep "\n" cfg.rules))
     ];
     scrape_configs = cfg.scrapeConfigs;
+    remote_write = cfg.remoteWriteConfigs;
+    remote_read = cfg.remoteReadConfigs;
   };
 
   generatedPrometheusYml = writePrettyJSON "prometheus.yml" promConfig;
@@ -75,6 +77,28 @@ let
           storage, Alertmanager).
         '';
         default = {};
+      };
+    };
+  };
+
+  promTypes.remote_write = types.submodule {
+    options = {
+      url = mkOption {
+        type = types.str;
+        description = ''
+          URL of the remote storage API which is compatible with prometheus.
+        '';
+      };
+    };
+  };
+
+  promTypes.remote_read = types.submodule {
+    options = {
+      url = mkOption {
+        type = types.str;
+        description = ''
+          URL of the remote storage API which is compatible with prometheus.
+        '';
       };
     };
   };
@@ -413,6 +437,24 @@ in {
         description = ''
           Parameters that are valid in all  configuration contexts. They
           also serve as defaults for other configuration sections
+        '';
+      };
+
+      remoteWriteConfigs = mkOption {
+        type = types.listOf promTypes.remote_write;
+        default = [];
+        apply = x: map _filter x;
+        description = ''
+          List of remote write endpoints.
+        '';
+      };
+
+      remoteReadConfigs = mkOption {
+        type = types.listOf promTypes.remote_read;
+        default = [];
+        apply = x: map _filter x;
+        description = ''
+          List of remote read endpoints.
         '';
       };
 
