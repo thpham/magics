@@ -12,7 +12,7 @@ with pkgs;
   influxdb   = callPackage ./pkgs/influxdb { };
   
   pgrouting   = callPackage ./pkgs/pgrouting  { };
-  postgis_2_3 = (pkgs.postgis_2_3.override { postgresql = pkgs.postgresql96; });
+  postgis     = (pkgs.postgis.override { postgresql = pkgs.postgresql96; });
 
   pg_qualstats   = callPackage ./pkgs/powa-team/pg_qualstats.nix { };
   pg_stat_kcache = callPackage ./pkgs/powa-team/pg_stat_kcache.nix { };

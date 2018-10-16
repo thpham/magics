@@ -1,6 +1,6 @@
 SHELL   := /usr/bin/env bash
 NIXOPS  := $(shell which nixops)
-VERSION := nixos-18.03
+VERSION := nixos-18.09
 
 all: deploy
 
