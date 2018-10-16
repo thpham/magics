@@ -52,12 +52,6 @@ let
       store-interval = "10s";
     };
 
-    admin = {
-      enabled = true;
-      bind-address = ":8083";
-      https-enabled = false;
-    };
-
     graphite = [{
       enabled = false;
     }];
