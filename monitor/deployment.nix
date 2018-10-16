@@ -56,13 +56,31 @@ let
             ];
             scrapeConfigs = [
               {
-                job_name = "${machine.name}";
+                job_name = "prometheus";
                 scrape_interval = "1m";
                 static_configs = [
                   {targets = ["localhost:9090"]; labels = { alias = "prometheus"; };}
+                ];
+              }
+              {
+                job_name = "influxdb";
+                scrape_interval = "1m";
+                static_configs = [
                   {targets = ["localhost:8086"]; labels = { alias = "influxdb"; };}
+                ];
+              }
+              {
+                job_name = "grafana";
+                scrape_interval = "1m";
+                static_configs = [
                   {targets = ["localhost:3000"]; labels = { alias = "grafana"; };}
-                  {targets = ["localhost:9100"]; labels = { alias = "${machine.name}"; };}
+                ];
+              }
+              {
+                job_name = "node";
+                scrape_interval = "1m";
+                static_configs = [
+                  {targets = ["localhost:9100"]; labels = { alias = "node"; };}
                 ];
               }
             ];
