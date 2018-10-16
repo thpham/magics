@@ -2,7 +2,7 @@
   "monitor": {
     "aws": {"securityGroupIds": [ "sg-" ], "instanceType": "m4.large", "storageSize": 20 },
     "configs": [
-      {"id": 0, "name": "prom-0", "aws-subnetId": "subnet-", "influxdbUser": "prom0", "influxdbPass": "changeme" }
+      {"id": 0, "name": "prom-0", "aws-subnetId": "subnet-", "influxdbUser": "prom0", "influxdbPass": "changeme", "targetHost": "192.168.56.103" }
     ]
   }
 }
