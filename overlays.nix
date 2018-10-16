@@ -8,6 +8,9 @@ with pkgs;
 
   bigchaindb = callPackage ./pkgs/bigchaindb { };
   
+  grafana    = callPackage ./pkgs/grafana { };
+  influxdb   = callPackage ./pkgs/influxdb { };
+  
   pgrouting   = callPackage ./pkgs/pgrouting  { };
   postgis_2_3 = (pkgs.postgis_2_3.override { postgresql = pkgs.postgresql96; });
 
@@ -15,7 +18,8 @@ with pkgs;
   pg_stat_kcache = callPackage ./pkgs/powa-team/pg_stat_kcache.nix { };
   powa-archivist = callPackage ./pkgs/powa-team/powa-archivist.nix { };
   powa-web = callPackage ./pkgs/powa-team/powa-web.nix { };
-
+  
+  prometheus = callPackage ./pkgs/prometheus { };
   prometheus-postgres-exporter = callPackage ./pkgs/prometheus-postgres-exporter { };
 
   tendermint = callPackage ./pkgs/tendermint { };
