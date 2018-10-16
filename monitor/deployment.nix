@@ -62,6 +62,7 @@ let
                   {targets = ["localhost:9090"]; labels = { alias = "prometheus"; };}
                   {targets = ["localhost:8086"]; labels = { alias = "influxdb"; };}
                   {targets = ["localhost:3000"]; labels = { alias = "grafana"; };}
+                  {targets = ["localhost:9100"]; labels = { alias = "${machine.name}"; };}
                 ];
               }
             ];
@@ -86,12 +87,59 @@ let
             };
           };
         };
+
+        services.nginx = {
+          enable = true;
+          virtualHosts = {
+            "${machine.name}.domain.tld" = {
+              #addSSL = true;
+              #enableACME = true;
+              default = true;
+              locations = {
+                "/" = { 
+                  proxyPass = "http://localhost:3000";
+                };
+                "/prometheus/" = { 
+                  proxyPass = "http://localhost:9090/";
+                  extraConfig = ''
+                    proxy_set_header Accept-Encoding "";
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+
+                    sub_filter_types text/html;
+                    sub_filter_once off;
+                    sub_filter '="/' '="/prometheus/';
+                    ## APPEARS TO BE UNNECESSARY? sub_filter '="/static/' '="/static/prometheus/';
+                    sub_filter 'var PATH_PREFIX = "";' 'var PATH_PREFIX = "/prometheus";';
+
+                    rewrite ^/prometheus/?$ /prometheus/graph redirect;
+                    rewrite ^/prometheus/(.*)$ /$1 break;
+                  '';
+                };
+                "/influxdb/" = { 
+                  proxyPass = "http://localhost:8086/";
+                  extraConfig = ''
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+
+                    proxy_max_temp_file_size 0;
+                  '';
+                };
+              };
+            };
+          };
+        };
+
         networking.firewall = {
           allowedTCPPorts = [
             80 443 # HTTP/S
-            9090   # Prometheus
-            8086   # InfluxDB HTTP service
-            3000   # Grafana
+            #9090   # Prometheus
+            #8086   # InfluxDB HTTP service
+            #3000   # Grafana
           ];
         };
 
