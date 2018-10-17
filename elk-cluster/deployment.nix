@@ -22,7 +22,7 @@ let
 
         services.elasticsearch = {
           enable = true;
-          package = pkgs.elasticsearch6;
+          package = pkgs.elasticsearch-oss;
           cluster_name = environment;
           dataDir = "/data";
           listenAddress = "${config.networking.privateIPv4}";
@@ -48,13 +48,13 @@ let
 
     services.kibana = {
       enable = true;
-      package = pkgs.kibana6;
+      package = pkgs.kibana-oss;
       listenAddress = "0.0.0.0";
     };
 
     services.elasticsearch = {
       enable = true;
-      package = pkgs.elasticsearch6;
+      package = pkgs.elasticsearch-oss;
       cluster_name = environment;
       dataDir = "/data";
       extraJavaOptions = [
@@ -102,6 +102,10 @@ let
               port => 4561
               type => "winston"
             }
+            http {
+              host => "127.0.0.1" # default: 0.0.0.0
+              port => 8080 # default: 8080
+            }
           }
 
           ## Add your filters / logstash plugins configuration here
@@ -142,13 +146,13 @@ let
             - "${pkgs.logstash-contrib}"
         '';
 
-        logstash6 = pkgs.stdenv.mkDerivation rec {
-          version = "6.2.4";
-          name = "logstash-${version}";
+        logstash6-oss = pkgs.stdenv.mkDerivation rec {
+          version = "6.3.2";
+          name = "logstash-oss-${version}";
 
           src = pkgs.fetchurl {
             url = "https://artifacts.elastic.co/downloads/logstash/${name}.tar.gz";
-            sha256 = "07j3jjg5ik4gjgvcx15qqqas9p1m3815jml82a5r1ip9l6vc4h20" ;
+            sha256 = "1ir8pbq706mxr56k5cgc9ajn2jp603zrqj66dimx6xxf2nfamw0w" ;
           };
 
           dontBuild         = true;
@@ -184,13 +188,13 @@ let
           serviceConfig = {
             ExecStartPre = ''${pkgs.coreutils}/bin/mkdir -p /data/logs ; ${pkgs.coreutils}/bin/chmod -R 700 /data '';
             ExecStart = lib.concatStringsSep " " (lib.filter (s: lib.stringLength s != 0) [
-              "${logstash6}/bin/logstash"
+              "${logstash6-oss}/bin/logstash"
               "-w 2"
               # BUG: NameError: `@path.plugins' is not allowable as an instance variable name
               #"--path.plugins ${pluginPath}" # have to put this in logstash.yml
               "--log.level warn"
               "-f ${logstashConfig}"
-              "--path.settings ${logstash6}/config"
+              "--path.settings ${logstash6-oss}/config"
               "--path.data /data"
               "--path.logs /data/logs"
             ]);
