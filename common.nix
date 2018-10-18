@@ -22,7 +22,7 @@ in {
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
-  services.openssh.permitRootLogin = "prohibit-password";
+  #services.openssh.permitRootLogin = "prohibit-password"; # incompatibility with cloud provider base image configs
   services.openssh.passwordAuthentication = false;
 
   ## osquery-2.5.2 is marked as broken

@@ -1,6 +1,6 @@
 { pkgs }:
 
-pkgs.buildGoPackage rec {
+pkgs.buildGo110Package rec {
   name = "prometheus-${version}";
   version = "2.3.2";
 
