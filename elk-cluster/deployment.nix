@@ -46,36 +46,65 @@ let
   kibana = { config, pkgs, ... }: {
     networking.firewall.enable = false;
 
-    services.kibana = {
-      enable = true;
-      package = pkgs.kibana-oss;
-      listenAddress = "0.0.0.0";
-    };
+    services = {
+      kibana = {
+        enable = true;
+        package = pkgs.kibana-oss;
+        listenAddress = "0.0.0.0";
+      };
 
-    services.elasticsearch = {
-      enable = true;
-      package = pkgs.elasticsearch-oss;
-      cluster_name = environment;
-      dataDir = "/data";
-      extraJavaOptions = [
-        "-Djava.net.preferIPv4Stack=true"
-        #"-Dlog4j2.disable.jmx=true"
-      ];
-      extraConf = ''
-        node.name: kibana
-        node.master: false
-        node.data: false
-        node.ingest: false
-        
-        # by default transport.host refers to network.host
-        transport.host: ${config.networking.privateIPv4}
+      elasticsearch-curator = {
+        enable = true;
+        actionYAML = ''
+        ---
+        actions:
+          1:
+            action: delete_indices
+            description: >-
+              Delete indices older than 5 days (based on index name), for logstash-
+              prefixed indices. Ignore the error if the filter does not result in an
+              actionable list of indices (ignore_empty_list) and exit cleanly.
+            options:
+              ignore_empty_list: True
+              disable_action: False
+            filters:
+            - filtertype: pattern
+              kind: prefix
+              value: logstash-
+            - filtertype: age
+              source: name
+              direction: older
+              timestring: '%Y.%m.%d'
+              unit: days
+              unit_count: 5
+        '';
+      };
 
-        # Minimum nodes alive to constitute an operational cluster
-        discovery.zen.minimum_master_nodes: 2
-        discovery.zen.ping.unicast.hosts:
-        ${esMasters}
-          - kibana
-      '';
+      elasticsearch = {
+        enable = true;
+        package = pkgs.elasticsearch-oss;
+        cluster_name = environment;
+        dataDir = "/data";
+        extraJavaOptions = [
+          "-Djava.net.preferIPv4Stack=true"
+          #"-Dlog4j2.disable.jmx=true"
+        ];
+        extraConf = ''
+          node.name: kibana
+          node.master: false
+          node.data: false
+          node.ingest: false
+
+          # by default transport.host refers to network.host
+          transport.host: ${config.networking.privateIPv4}
+
+          # Minimum nodes alive to constitute an operational cluster
+          discovery.zen.minimum_master_nodes: 2
+          discovery.zen.ping.unicast.hosts:
+          ${esMasters}
+            - kibana
+        '';
+      };
     };
   };
 
