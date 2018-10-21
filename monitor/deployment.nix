@@ -52,6 +52,7 @@ let
             remoteReadConfigs = [
               {
                 url = "http://localhost:8086/api/v1/prom/read?u=${machine.influxdbUser}&p=${machine.influxdbPass}&db=prometheus";
+                read_recent = true;
               }
             ];
             scrapeConfigs = [

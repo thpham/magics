@@ -100,6 +100,14 @@ let
           URL of the remote storage API which is compatible with prometheus.
         '';
       };
+      read_recent = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Whether reads should be made for queries for time ranges that
+          the local storage should have complete data for.
+        '';
+      };
     };
   };
 
