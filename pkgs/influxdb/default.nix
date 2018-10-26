@@ -1,6 +1,6 @@
 { pkgs }:
 
-pkgs.buildGoPackage rec {
+pkgs.buildGo110Package rec {
   name = "influxdb-${version}";
   version = "1.6.3";
 
