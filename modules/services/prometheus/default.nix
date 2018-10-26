@@ -25,6 +25,7 @@ let
     scrape_configs = cfg.scrapeConfigs;
     remote_write = cfg.remoteWriteConfigs;
     remote_read = cfg.remoteReadConfigs;
+    alerting = cfg.alertingConfigs;
   };
 
   generatedPrometheusYml = writePrettyJSON "prometheus.yml" promConfig;
@@ -40,7 +41,7 @@ let
     "--web.listen-address=${cfg.listenAddress}"
     "--alertmanager.notification-queue-capacity=${toString cfg.alertmanagerNotificationQueueCapacity}"
     "--alertmanager.timeout=${toString cfg.alertmanagerTimeout}s"
-    (optionalString (cfg.alertmanagerURL != []) "-alertmanager.url=${concatStringsSep "," cfg.alertmanagerURL}")
+    # (optionalString (cfg.alertmanagerURL != []) "-alertmanager.url=${concatStringsSep "," cfg.alertmanagerURL}") # Deprecated since v2
   ];
 
   promTypes.globalConfig = types.submodule {
@@ -463,6 +464,13 @@ in {
         apply = x: map _filter x;
         description = ''
           List of remote read endpoints.
+        '';
+      };
+
+      alertingConfigs = mkOption {
+        default = {};
+        description = ''
+          Alertmanagers
         '';
       };
 
