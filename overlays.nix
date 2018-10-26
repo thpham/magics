@@ -10,6 +10,8 @@ with pkgs;
   
   grafana    = callPackage ./pkgs/grafana { };
   influxdb   = callPackage ./pkgs/influxdb { };
+
+  nexus = callPackage ./pkgs/nexus { };
   
   pgrouting   = callPackage ./pkgs/pgrouting  { };
   postgis     = (pkgs.postgis.override { postgresql = pkgs.postgresql96; });
