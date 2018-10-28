@@ -18,6 +18,9 @@ let
         ];
         services.kubernetes.roles = [ "master" ];
         services.zerotierone.enable = true;
+        environment.systemPackages = with pkgs; [
+          nfs-utils
+        ];
       };
   };
   masterServers = map makeMasterServer machines.masters.configs;
@@ -36,6 +39,9 @@ let
           kubernetes
         ];
         services.kubernetes.roles = [ "node" ];
+        environment.systemPackages = with pkgs; [
+          nfs-utils
+        ];
       };
   }; 
   workerServers = map makeWorkerServer machines.workers.configs;

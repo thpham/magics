@@ -115,6 +115,30 @@ $ aws iam add-role-to-instance-profile --role-name k8sMaster --instance-profile-
 $ aws iam add-role-to-instance-profile --role-name k8sWorker --instance-profile-name k8sWorker-Instance-Profile
 ```
 
+## Install Helm & Tiller
+
+```
+$ kubectl apply -f helm/tiller-rbac.yaml
+$ helm init --service-account tiller --upgrade
+```
+
+## VBOX dynamic NFS storage provisioner
+
+```
+$ helm repo update
+$ helm install --name nfs-storage --namespace storage \
+  --set storageClass.archiveOnDelete=false --set storageClass.name=default \
+  --set nfs.server=192.168.55.100 --set nfs.path=/data/private/nfs/k8s-pv \
+  stable/nfs-client-provisioner
+```
+
+```
+$ kubectl -nstorage edit sc default
+
+annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+```
+
 
 # TODO:
 
