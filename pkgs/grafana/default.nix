@@ -1,6 +1,6 @@
 { pkgs }:
 
-pkgs.buildGo111Package rec {
+pkgs.buildGo110Package rec {
   version = "5.3.2";
   name = "grafana-${version}";
   goPackagePath = "github.com/grafana/grafana";
