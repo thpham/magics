@@ -1,0 +1,62 @@
+workspace(name = "cortex")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+    name = "build_stack_rules_proto",
+    urls = ["https://github.com/stackb/rules_proto/archive/d86ca6bc56b1589677ec59abfa0bed784d6b7767.tar.gz"],
+    sha256 = "36f11f56f6eb48a81eb6850f4fb6c3b4680e3fc2d3ceb9240430e28d32c47009",
+    strip_prefix = "rules_proto-d86ca6bc56b1589677ec59abfa0bed784d6b7767",
+)
+#git_repository(
+#  name = "build_stack_rules_proto",
+#  remote = "https://github.com/stackb/rules_proto.git",
+#)
+load("@build_stack_rules_proto//go:deps.bzl", "go_grpc_library")
+go_grpc_library()
+
+http_archive(
+    name = "io_bazel_rules_go",
+    urls = ["https://github.com/bazelbuild/rules_go/releases/download/0.16.5/rules_go-0.16.5.tar.gz"],
+    sha256 = "7be7dc01f1e0afdba6c8eb2b43d2fa01c743be1b9273ab1eaf6c233df078d705",
+)
+load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
+go_rules_dependencies()
+go_register_toolchains()
+
+http_archive(
+    name = "bazel_gazelle",
+    urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.16.0/bazel-gazelle-0.16.0.tar.gz"],
+    sha256 = "7949fc6cc17b5b191103e97481cf8889217263acf52e00b560683413af204fcb",
+)
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
+gazelle_dependencies()
+
+go_repository(
+    name = "com_github_spf13_cobra",
+    tag = "v0.0.3",
+    importpath = "github.com/spf13/cobra",
+)
+go_repository(
+    name = "com_github_spf13_pflag",
+    tag = "v1.0.3",
+    importpath = "github.com/spf13/pflag",
+)
+
+local_repository(
+    name = "magics_proto",
+    path = "../proto/",
+)
+
+#=============================================================================
+# Docker rules
+http_archive(
+    name = "io_bazel_rules_docker",
+    sha256 = "c0e9d27e6ca307e4ac0122d3dd1df001b9824373fb6fb8627cd2371068e51fef",
+    strip_prefix = "rules_docker-0.6.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.6.0.tar.gz"],
+)
+load(
+    "@io_bazel_rules_docker//go:image.bzl",
+    _go_image_repos = "repositories",
+)
+_go_image_repos()

@@ -1,0 +1,27 @@
+load("@build_stack_rules_proto//go:go_grpc_library.bzl", "go_grpc_library")
+go_grpc_library(
+    name = "magics_go_library",
+    #go_deps = [
+    #    "@com_github_golang_protobuf//ptypes/any:go_default_library",
+    #],
+    importpath = "github.com/thpham/magics/apps/proto",
+    deps = ["@magics_proto//:libs"],
+)
+
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "greet.go",
+        "root.go",
+        "serve.go",
+    ],
+    importpath = "github.com/thpham/cortex/pkg/cmd",
+    visibility = ["//visibility:public"],
+    deps = [
+      ":magics_go_library",
+      "@com_github_spf13_cobra//:go_default_library",
+      "@org_golang_x_net//context:go_default_library",
+      "@org_golang_google_grpc//:go_default_library",
+    ],
+)

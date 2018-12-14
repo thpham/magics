@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "ch.ithings.proto";
+option java_outer_classname = "HelloWorldProto";
+option objc_class_prefix = "HLWS";
+
+//import "proto/common.proto";
+
+package helloworld;
+
+service Greeter {
+  rpc Greet (GreetRequest) returns (GreetReply) {}
+  /*
+  rpc GreetServerStream (GreetRequest) returns (stream GreetReply) {}
+  rpc GreetClientStream (stream GreetRequest) returns (GreetReply) {}
+  rpc GreetBidirectional (stream GreetRequest) returns (stream GreetReply) {}
+  */
+}
+
+
+// The request message containing the user's name.
+message GreetRequest {
+    string greeting = 1;
+     //common.Config config = 2;
+}
+
+// The response message containing the greetings
+message GreetReply {
+    string reply = 1;
+}
