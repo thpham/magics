@@ -122,7 +122,7 @@ python-keystoneclient==3.17.0
 python-swiftclient==3.6.0
 pytz==2018.5
 PyYAML==3.13
-requests==2.19.1
+requests==2.20.0
 requests-oauthlib==1.0.0
 rfc3986==1.1.0
 rsa==3.4.2
