@@ -1,0 +1,14 @@
+{
+  "thanos": {
+    "aws": {"securityGroupIds": [ "sg-" ], "instanceType": "m4.large", "storageSize": 20 },
+    "smtp": {"host": "email-smtp.us-east-1.amazonaws.com:587", "user": "AWS_SES_ACCESS_KEY", "password": "AWS_SES_SECRET_KEY", "fromAddress": "no-reply@domain.tld" },
+    "configs": [
+      {
+        "id": 0, "name": "thanos-0", "aws-subnetId": "subnet-", "fqdn": "thanos-0.domain.tld", "tlsEnable": false,
+        "grafana": { "adminPassword": "changeme", "secretKey": "ahGai4oisof0aemu4lo5lah3wiesaiFe" },
+        "HttpBasicAuth": { "username": "password" },
+        "targetHost": "192.168.56.103"
+      }
+    ]
+  }
+}
