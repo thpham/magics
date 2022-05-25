@@ -115,7 +115,7 @@ protobuf==3.6.1
 pyasn1==0.4.4
 pyasn1-modules==0.2.2
 pycparser==2.18
-PyJWT==1.6.4
+PyJWT==2.4.0
 pyparsing==2.2.0
 python-dateutil==2.7.1
 python-keystoneclient==3.17.0
